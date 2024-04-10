@@ -19,5 +19,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [ ] Kennlinie visualiseren
 - [ ] Kennlinie mit stückweiser linearer Regression approximieren
 - [ ] Flussspannung aus Regressionsergebnis ermitteln
+### Präsentation
+- [ ] Folien vorbereiten
+- [ ] Präsentation in vorgegebener Zeit proben
 
 [^1]: Skriptum zur Vorlesung **Physikalische Grundlagen elektronischer Bauelemente** WS 2022/23, Prof. Dr.-Ing. Michael Möller

@@ -4,8 +4,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 ## ToDo:
 - [x] [Markdown](https://www.markdownguide.org/cheat-sheet/) für README & Docstrings nutzen
 - [x] In Git Branch `dev` arbeiten
-- [ ] Literaturgrundlage[^1] in Repository speichern
-- [ ] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
+- [x] Literaturgrundlage[^1] in Repository speichern
+- [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
 - [ ] DDM Bestimmungsgleichungen mit [SimPy](https://simpy.readthedocs.io/en/latest/) implementieren
 ### p-n-Übergang im thermodynamischen Gleichgewicht
 - [ ] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:

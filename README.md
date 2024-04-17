@@ -6,7 +6,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] In Git Branch `dev` arbeiten
 - [x] Literaturgrundlage[^1] in Repository speichern
 - [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
-- [ ] DDM Bestimmungsgleichungen mit [SimPy](https://simpy.readthedocs.io/en/latest/) implementieren
+- [ ] DDM Bestimmungsgleichungen mit [SymPy](https://docs.sympy.org/latest/index.html) implementieren
+- [x] [PyLaTeX](https://jeltef.github.io/PyLaTeX/current/index.html) implementieren um DataFrames und später Tabellen in pdf Form auszugeben
 ### p-n-Übergang im thermodynamischen Gleichgewicht
 - [ ] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
     1. [ ] *Wichtige Größen* als solche bestimmen

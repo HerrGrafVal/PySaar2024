@@ -1,4 +1,8 @@
 markdown_test.md
 scripts/__pycache__/
-initial_values/pandas.tex
+initial_values/Materialparameter Si.tex
+initial_values/Materialparameter Ge.tex
+initial_values/Materialparameter GaAs.tex
+initial_values/Naturkonstanten.tex
 initial_values/Initial Parameters.pdf
+PyfEng_Motivation.pdf

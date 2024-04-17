@@ -21,7 +21,7 @@ class Sym(Symbol):
 
 
 """
-Create `sympy.Symbol()` instance for required units of measurement
+Create `sympy.Symbol()` instances for required units of measurement
 Decision not to use `sympy.physics.units` was made for lack of good documentation on `sympy.physics.units`
 """
 
@@ -37,16 +37,18 @@ kelvin = Symbol("K")
 
 
 """
-Creates `Sym()` instances for universal constants and material parameters in seperate namespace
+Create `Sym()` instances for universal constants and material parameters in seperate namespace
 """
 
 m_e = Sym("m_e", "Ruhemasse eines Elektrons", kilogram)
 q_e = Sym("e", "Elementarladung", ampere * second)
-eps_0 = Sym("epsilon_0", "Dielektrizitätskonstante des Vakuums", ampere * second / (volt * meter))
-h = Sym("h", "Planksches Wirkungsquantum", joule * second)
+eps_0 = Sym("\epsilon_0", "Dielektrizitätskonstante des Vakuums", ampere * second / (volt * meter))
+h = Sym("h", "Plank'sches Wirkungsquantum", joule * second)
 k = Sym("k", "Boltzmann-Konstante", joule / kelvin)
 
-n_i = Sym("n_i", "Eigenleitungsdichte", centimeter**(3))
+constants = [m_e, q_e, eps_0, h, k]
+
+n_i = Sym("n_i", "Eigenleitungsdichte", centimeter**(-3))
 eps_r = Sym("\epsilon_r", "Relative Permittivität", 1)
 W_g = Sym("W_g", "Bandlücke", electron_volt)
 

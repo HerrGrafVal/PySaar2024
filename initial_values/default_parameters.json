@@ -1,24 +1,20 @@
 {
 	"Hinweise": {
 		"Format" : ["Koeffizient", "*10^x"],
-		"Einheit" : "Siehe code/symbols.py",
+		"Einheit" : "Siehe scripts/symbols.py",
 		"Bandlücke" : "In eV",
 		"Eigenleitungsdichte" : "in cm^-3",
 		"Effektive Ladungsträgerdichte" : "in cm^-3",
 		"Effektive Massen" : "Durch Ruhemasse normiert"
 	},
-	"Ge": {
-		"Bandlücke" : [0.68, 0],
-		"Eigenleitungsdichte" : [2.0, 13],
-		"Relative Permittivität" : [16, 0],
-		"Effektive Ladungsträgerdichte im Leitungsband" : [1.02, 19],
-		"Effektive Ladungsträgerdichte im Valenzband" : [0.564, 19],
-		"Effektive Zustandsdichte-Massen für Elektronen" : [0.55, 0],
-		"Effektive Zustandsdichte-Massen für Löcher" : [0.37, 0],
-		"Effektive Leitfähigkeits-Massen für Elektronen" : [0.12, 0],
-		"Effektive Leitfähigkeits-Massen für Löcher": [0.21, 0]
+	"Naturkonstanten" :  {
+		"Ruhemasse eines Elektrons" : [9.1, -31],
+		"Elementarladung" : [1.6, -19],
+		"Dielektrizitätskonstante des Vakuums" : [8.854, -12],
+		"Plank'sches Wirkungsquantum" : [6.626, -34],
+		"Boltzmann-Konstante" : [1.38, -23]
 	},
-	"Si": {
+	"Materialparameter Si": {
 		"Bandlücke" : [1.08, 0],
 		"Eigenleitungsdichte" : [1.45, 10],
 		"Relative Permittivität" : [12, 0],
@@ -29,7 +25,18 @@
 		"Effektive Leitfähigkeits-Massen für Elektronen" : [0.26, 0],
 		"Effektive Leitfähigkeits-Massen für Löcher": [0.386, 0]
 	},
-	"GaAs": {
+	"Materialparameter Ge": {
+		"Bandlücke" : [0.68, 0],
+		"Eigenleitungsdichte" : [2.0, 13],
+		"Relative Permittivität" : [16, 0],
+		"Effektive Ladungsträgerdichte im Leitungsband" : [1.02, 19],
+		"Effektive Ladungsträgerdichte im Valenzband" : [0.564, 19],
+		"Effektive Zustandsdichte-Massen für Elektronen" : [0.55, 0],
+		"Effektive Zustandsdichte-Massen für Löcher" : [0.37, 0],
+		"Effektive Leitfähigkeits-Massen für Elektronen" : [0.12, 0],
+		"Effektive Leitfähigkeits-Massen für Löcher": [0.21, 0]
+	},
+	"Materialparameter GaAs": {
 		"Bandlücke" : [1.38, 0],
 		"Eigenleitungsdichte" : [2.1, 6],
 		"Relative Permittivität" : [13, 0],

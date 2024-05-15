@@ -105,12 +105,12 @@ U_D = U_T * log((N_a * N_d) / (n_i ** 2))
 x_n = root((2*eps*U_D*N_a)/(q_e * N_d * (N_d + N_a)), 2)
 x_p = -1 * x_n * N_d / N_a
 
+W_c = W_v + W_g
+
 ddx_E = E.diff(x)
-
 ddx_phi = phi.diff(x)
-
-ddx_W_c = W_c.diff(x)
-ddx_W_v = W_v.diff(x)
 
 ddx_J_n = J_n.diff(x)
 ddx_J_p = J_p.diff(x)
+
+namespace = dir()

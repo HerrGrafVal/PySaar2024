@@ -83,8 +83,10 @@ x_n = Sym("x_n", "Grenze n-Raumladungszone", nanometer)
 
 rho = Function("\\rho")(x)
 n0 = Function("n_0")(x)
+n = Function("n")(x)
 del_n = Function("\\Delta n")(x)
 p0 = Function("p_0")(x)
+p = Function("p")(x)
 del_p = Function("\\Delta p")(x)
 E = Function("E")(x)
 phi = Function("\\varphi")(x)
@@ -105,7 +107,6 @@ U_D = U_T * log((N_a * N_d) / (n_i ** 2))
 x_n = root((2*eps*U_D*N_a)/(q_e * N_d * (N_d + N_a)), 2)
 x_p = -1 * x_n * N_d / N_a
 
-W_c = W_v + W_g
 
 ddx_E = E.diff(x)
 ddx_phi = phi.diff(x)

@@ -1,20 +1,26 @@
 from initial_values import values
+from sympy import lambdify
 from symbols import *
 from regions import NeutralPRegion, NeutralNRegion, P_SCR, N_SCR
 import matplotlib.pyplot as plt
-import sympy as sp
 import numpy as np
+
+W_Fn = W_F
+W_Fp = W_F
+W_F = 0.5 * W_g
 
 WIDTH = 7
 
 parameter = {
     N_a: 2.25 * (10 ** 17),
     N_d: 5 * (10 ** 17),
+    mu_p: 317,
+    mu_n: 721,
+    U_ext: 0,
     T: 300
 }
 
 ELEMENT = "Si"
-
 
 def fill_values(func_in, element=ELEMENT):
     """
@@ -41,45 +47,19 @@ def fill_values(func_in, element=ELEMENT):
 
 if __name__ == "__main__":
 
-    # neutral-p-region -w_p <= x < x_p
-    ONE = NeutralPRegion()
-
-    # p-SCR x_p <= x < 0
-    TWO = P_SCR()
-
-    # n-SCR 0 < x <= x_n
-    THREE = N_SCR()
-
-    # neutral-n-region x_n < x <= w_n
-    FOUR = NeutralNRegion()
-
-    # Create Piecewise functions from ONE, TWO, THREE, FOUR
-    index = 0
-    funcs = [rho, E, phi, W_v]
-    func_names = ["rho", "E", "phi", "W_v"]
-    for sym in funcs:
-        exec(func_names[index] + " = sp.Piecewise("
-             + "(ONE.funcs[sym], x < x_p),"
-             + "(TWO.funcs[sym], (x_p <= x) & (x < 0)),"
-             + "(THREE.funcs[sym], (0 < x) & (x <= x_n)),"
-             + "(FOUR.funcs[sym], x_n < x))", globals()
-             )
-        index += 1
-
-    # Lambdify all functions in func_names
-    for i in func_names:
-        exec(i + " = sp.lambdify(x, fill_values(" + i + "))", globals())
-
     x_p = float(fill_values(x_p))
     x_n = float(fill_values(x_n))
     w_p = abs(x_p * WIDTH)
     w_n = x_n * WIDTH
 
-    xx = np.linspace(-1 * w_p, w_n, 1000)
+    # neutral-p-region -w_p <= x < x_p
+    ONE = NeutralPRegion()
 
-    fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
-    plt_rho.plot(xx, rho(xx))
-    plt_E.plot(xx, E(xx))
-    plt_phi.plot(xx, phi(xx))
-    plt_W.plot(xx, W_v(xx))
-    plt.show()
+    # p-SCR x_p <= x < 0
+    TWO = P_SCR(x_p)
+
+    # n-SCR 0 < x <= x_n
+    THREE = N_SCR(x_n)
+
+    # neutral-n-region x_n < x <= w_n
+    FOUR = NeutralNRegion()

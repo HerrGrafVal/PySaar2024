@@ -1,68 +1,62 @@
-from sympy import Eq, exp, simplify
+from sympy import Eq, exp, sqrt, sinh, simplify
 from sympy.solvers.ode.systems import dsolve_system
 from symbols import *
 
-# Drift Diffusion Modell (DDM) equations
-bandgap = Eq(W_c, W_v + W_g)
-charge_density = Eq(rho, q_e * (p + N_dp - n - N_am))
-field_strength = Eq(E.diff(x), rho / eps)
-potential = Eq(phi.diff(x), -1 * E)
-field_energy = Eq(W_v.diff(x), q_e * E)
-electron_density = Eq(n, N_c * exp(-1 * (W_c - W_Fn) / (k * T)))
-hole_density = Eq(p, N_v * exp(-1 * (W_Fp - W_v) / (k * T)))
-
 # ----------------------------------------------------------------------------
+
+class Region():
+    def __init__(self):
+        # Setup functions
+        self.rho = Function("\\rho")(x)
+
+    def simulate(self, a, b):
+        self.E = self.rho.integrate((x, a, b)) / eps
+        self.phi = -1 * self.E.integrate((x, a, b))
+        self.W_v = -1 * q_e * self.phi
+        self.funcs = {
+            rho: simplify(self.rho),
+            E: simplify(self.E),
+            phi: simplify(self.phi),
+            W_v: simplify(self.W_v)
+        }
 
 class PDotation():
     def __init__(self):
         # Dotation and charge carrier density
-        self.p0 = N_a
-        self.n0 = (n_i**2) / self.p0
+        self.pp0 = N_a
+        self.np0 = (n_i**2) / self.pp0
         self.N_am = N_a
         self.N_dp = 0
-
+        self.n = Function("n_p")(x)
+        self.p = Function("p_p")(x)
+      
 class NDotation():
     def __init__(self):
         # Dotation and charge carrier density
-        self.n0 = N_d
-        self.p0 = (n_i**2) / self.n0
+        self.nn0 = N_d
+        self.pn0 = (n_i**2) / self.nn0
         self.N_dp = N_d
         self.N_am = 0
+        self.n = Function("n_n")(x)
+        self.p = Function("p_n")(x)
 
-class NeutralRegion():
+    def adjust_for_integration_constants(self):
+        self.funcs[phi] += U_D
+        self.funcs[W_v] -= q_e * U_D
+
+class NeutralRegion(Region):
     def __init__(self):
-        # Adjust DDM equations
-        self.charge_density = Eq(rho, 0)
-        self.field_strength = Eq(E, 0)
+        Region.__init__(self)
+        self.funcs = {
+            rho: 0,
+            E: 0,
+            phi: 0,
+            W_v: 0
+        }
 
-class SpaceChargeRegion():
+class SpaceChargeRegion(Region):
     def __init__(self):
-        # Select relevant DDM equations
-        # self.EQS = [bandgap, charge_density, field_strength, potential, field_energy, electron_density, hole_density]
-        self.EQS = [bandgap, charge_density, field_strength, potential, field_energy]
-        # self.funcs = [rho, E, phi, W_v, W_c, p, n]
-        self.funcs = [rho, E, phi, W_v, W_c]
-
-    def use_self(self):
-        new_EQS = []
-        for EQ in self.EQS:
-            EQ = EQ.subs(N_dp, self.N_dp)
-            EQ = EQ.subs(N_am, self.N_am)
-            EQ = EQ.subs(n, self.n0)
-            EQ = EQ.subs(p, self.p0)
-            new_EQS.append(EQ)
-        self.EQS = new_EQS
-
-
-    def get_sol_dict(self):
-        # Solve DDM and return result as Dictionary rather than list of EQs
-        # EQS_SOLVED = dsolve_system(self.EQS, self.funcs, x, self.ics)[0]
-        EQS_SOLVED = dsolve_system(self.EQS, self.funcs, x)[0]
-        sol_dict = {}
-        for EQ in EQS_SOLVED:
-            sol_dict[EQ.lhs] = simplify(EQ.rhs)
-        return sol_dict
-
+        Region.__init__(self)
 
 # ----------------------------------------------------------------------------
 
@@ -72,14 +66,11 @@ class NeutralPRegion(NeutralRegion, NDotation):
         NeutralRegion.__init__(self)
         PDotation.__init__(self)
 
-        # Adjust DDM equations
-        self.potential = Eq(phi, 0)
-        self.valence = Eq(W_v, 0)
+        # Majority
+        self.p = self.pp0
+        # Minority changes with external voltage! Yet to be implemented
+        self.n = self.np0
 
-        # Minority changes with external voltage!
-        # Yet to be implemented, see page 209
-        self.n = self.n0
-        self.p = self.p0
 
 class NeutralNRegion(NeutralRegion, NDotation):
     def __init__(self):
@@ -87,39 +78,32 @@ class NeutralNRegion(NeutralRegion, NDotation):
         NeutralRegion.__init__(self)
         NDotation.__init__(self)
 
-        # Adjust DDM equations
-        self.potential = Eq(phi, U_D)
-        self.valence = Eq(W_v, q_e * U_D)
+        self.adjust_for_integration_constants()
 
-        # Minority changes with external voltage!
-        # Yet to be implemented, see page 209
-        self.n = self.n0
-        self.p = self.p0
+        # Majority
+        self.n = self.nn0
+        # Minority changes with external voltage! Yet to be implemented
+        self.p = self.pn0
 
 # ----------------------------------------------------------------------------
 
 class P_SCR(SpaceChargeRegion, PDotation):
 
-    def __init__(self, x_p):
+    def __init__(self):
         # Parent class initialisation
         SpaceChargeRegion.__init__(self)
         PDotation.__init__(self)
+        self.rho = -1 * q_e * N_a
 
-        # Boltzmann boundary conditions, see page 205f
-        self.ics = {
-            n.subs(x, x_p) : N_d * exp(-U_D/U_T),
-            p.subs(x, x_p) : N_a
-            }
+        self.simulate(x_p, x)
 
 class N_SCR(SpaceChargeRegion, NDotation):
 
-    def __init__(self, x_n):
+    def __init__(self):
         # Parent class initialisation
         SpaceChargeRegion.__init__(self)
         NDotation.__init__(self)
+        self.rho = q_e * N_d
 
-        # Boltzmann boundary conditions, see page 205f
-        self.ics = {
-            n.subs(x, x_n) : N_d,
-            p.subs(x, x_n) : N_a * exp(-U_D/U_T),
-            }
+        self.simulate(x_n, x)
+        self.adjust_for_integration_constants()

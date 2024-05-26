@@ -98,15 +98,20 @@ W_Fp = Function("W_{Fp}")(x)
 J_n = Function("J_n")(x)
 J_p = Function("J_n")(x)
 R = Function("R")(x)
-mu_n = Function("\\mu_n")(x)
-mu_p = Function("\\mu_p")(x)
+mu_n = Sym("\\mu_n", "Beweglichkeit der Elektronen im p-Bereich", centimeter**2 / (volt*second))
+mu_p = Sym("\\mu_p", "Beweglichkeit der Löcher im n-Bereich", centimeter**2 / (volt*second))
+tau_n = Function("\\tau_n")(x)
+tau_p = Function("\\tau_p")(x)
 
 eps = eps_0 * eps_r
 U_T = k * T / q_e
 U_D = U_T * log((N_a * N_d) / (n_i ** 2))
 x_n = root((2*eps*U_D*N_a)/(q_e * N_d * (N_d + N_a)), 2)
 x_p = -1 * x_n * N_d / N_a
+D_n = U_T * mu_n
+D_p = U_T * mu_p
 
+U_ext = Sym("U_{ext}", "Extern angelegte Spannung", volt)
 
 ddx_E = E.diff(x)
 ddx_phi = phi.diff(x)

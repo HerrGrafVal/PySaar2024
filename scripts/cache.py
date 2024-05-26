@@ -1,5 +1,6 @@
 from sympy import sympify
 from symbols import *
+from numpy import array, save, load
 
 SAVE_FOLDER = "../simulation_results/"
 
@@ -8,7 +9,7 @@ def read_from_file(filename, namespace):
     Returns `sympy.expression` instance with working symbols
 
     Parameters
-    : **filename** *(string)* Filename (including data type suffix) to read
+    : **filename** *(string)* Filename (including data type suffix .txt) to read
     : **namespace** *(list)* dir() from symbols.py
     """
 
@@ -31,9 +32,34 @@ def save_to_file(filename, expr):
     Saves `expr` to `simulation_results/filename`
 
     Parameters
-    : **filename** *(string)* Filename (including data type suffix) to write to
+    : **filename** *(string)* Filename (including data type suffix .txt) to write to
     : **expr** *(sympy expression)* to save
     """
 
     with open(SAVE_FOLDER + filename, "w") as file:
         file.write(str(expr))
+
+def save_to_npy(filename, x, y):
+    """
+    Saves `numpy array from x, y` to `simulation_results/filename`
+
+    Parameters
+    : **filename** *(string)* Filename (without data type suffix) to write to
+    : **[x, y]** *(numpy.arrays)* to save
+    """
+
+    values = array([x, y])
+    save(SAVE_FOLDER + filename + ".npy", values)
+
+def read_from_npy(filename):
+    """
+    Returns `list` of `numpy.arrays` from `simulation_results/filename`
+
+    Parameters
+    : **filename** *(string)* Filename (without data type suffix) to read from, must be .npy
+    """
+
+    values = load(SAVE_FOLDER + filename + ".npy")
+    x = values[0]
+    y = values[1]
+    return [x, y]

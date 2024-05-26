@@ -28,8 +28,8 @@ Decision not to use `sympy.physics.units` was made for lack of good documentatio
 """
 
 meter = Symbol("m")
-centimeter = 100 * meter
-nanometer = 10**9 * meter
+centimeter = meter / 100
+nanometer = meter / (10**9)
 kilogram = Symbol("kg")
 second = Symbol("s")
 ampere = Symbol("A")
@@ -37,6 +37,8 @@ volt = Symbol("V")
 electron_volt = Symbol("eV")
 joule = Symbol("J")
 kelvin = Symbol("K")
+
+full_units = [meter, kilogram, second, ampere, volt, joule, kelvin, electron_volt]
 
 # ----------------------------------------------------------------------------
 

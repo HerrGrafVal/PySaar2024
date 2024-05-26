@@ -36,8 +36,8 @@ def build_data_frame(name, var=0):
 def display_unit(unit_in):
     """
     Returns string in LATEX math format, after checking for missing unit prefixes
-    Necessary since `cm` is defined as `100*m` in *symbols.py* to avoid unit errors during calculations.
-    E.g. cm^-3 is displayed as 1/1000000*m**3 while it should be $cm^-3$
+    Necessary since `cm` is defined as `m/100` in *symbols.py* to avoid unit errors during calculations.
+    E.g. cm^-3 is displayed as 1000000/m**3 while it should be $cm^-3$
 
     Also renders units such as A * s / (V * m) to Latex Fraction
 
@@ -57,15 +57,17 @@ def display_unit(unit_in):
     text = str(unit_in)
     try:
         unit, power = text.split("**")
-        unit = unit.split("*")[-1]
+        unit = unit.split("/")[-1]
         power = int(power[0])
-        if "1/" in text:
+        if "/m" in text:
             if str(1000**power) in text:
                 unit = "m" + unit
             elif str(100**power) in text:
                 unit = "c" + unit
             power *= -1
         return "$" + unit + "^{" + str(power) + "}$"
+
+    # Remove unnecessary arithmetic symbols before rendering
     except:
         if "*" in text:
             text = text.replace("*", "")

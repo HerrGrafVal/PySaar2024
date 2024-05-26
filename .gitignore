@@ -1,5 +1,6 @@
 markdown_test.md
-scripts/__pycache__
+__pycache__/
+simulation_results/
 initial_values/Materialparameter Si.tex
 initial_values/Materialparameter Ge.tex
 initial_values/Materialparameter GaAs.tex

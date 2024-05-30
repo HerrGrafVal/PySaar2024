@@ -4,7 +4,8 @@ from symbols import *
 default_parameter = {
     N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
     N_d: 5 * (10 ** 17) * (centimeter ** -3),
-    T: 300 * kelvin
+    T: 300 * kelvin,
+    U_ext : 0 * volt
 }
 
 ELEMENT = "Si"

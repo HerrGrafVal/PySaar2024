@@ -13,7 +13,7 @@ def read_from_file(filename, namespace):
     : **namespace** *(list)* dir() from symbols.py
     """
 
-    ns = {"e" : q_e}
+    ns = {}
     for var in namespace:
         if "__" not in var:
             temp = eval(var)
@@ -24,6 +24,8 @@ def read_from_file(filename, namespace):
     with open(SAVE_FOLDER + filename, "r") as file:
         expr_str = file.read()
     expr_str = expr_str.replace("\\", "")
+    expr_str = expr_str.replace("U_{ext}", "VOLTAGE")
+    ns["VOLTAGE"] = U_ext
     expr = sympify(expr_str, locals = ns)
     return expr
 

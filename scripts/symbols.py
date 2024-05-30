@@ -29,6 +29,7 @@ Decision not to use `sympy.physics.units` was made for lack of good documentatio
 
 meter = Symbol("m")
 centimeter = meter / 100
+milimeter = meter / 1000
 nanometer = meter / (10**9)
 kilogram = Symbol("kg")
 second = Symbol("s")
@@ -86,6 +87,7 @@ Create additional `Sym()` instances for use in later calculations
 """
 
 x = Sym("x", "Ortskoordinate, Nullpunkt im p-n-Übergang", nanometer)
+A = Sym("A", "Querschnittsfläche der Diode", milimeter**2)
 T = Sym("T", "Temperatur", kelvin)
 
 w_p = Sym("w_p", "Weite p-Bahngebiet", nanometer)
@@ -95,6 +97,14 @@ w_n = Sym("w_n", "Weite n-Bahngebiet", nanometer)
 x_n = Sym("x_n", "Grenze n-Raumladungszone", nanometer)
 
 U_ext = Sym("U_{ext}", "Extern angelegte Spannung", volt)
+
+W_t = Sym("W_t", "Trap Energieniveaus (Halbleiter Verunreinigung)", electron_volt)
+
+tau_n = Sym("\\tau_n", "Mittlere Lebensdauer der Elektronen als Minoritätsträger", second)
+tau_p = Sym("\\tau_p", "Mittlere Lebensdauer der Löcher als Minoritätsträger", second)
+
+I_s = Sym("I_S", "Sättigungsstrom", ampere)
+I_rg = Sym("I_{rg}", "Rekombinationsstrom", ampere)
 
 # ----------------------------------------------------------------------------
 
@@ -133,8 +143,6 @@ W_Fp = Function("W_{Fp}")(x)
 J_n = Function("J_n")(x)
 J_p = Function("J_n")(x)
 R = Function("R")(x)
-tau_n = Function("\\tau_n")(x)
-tau_p = Function("\\tau_p")(x)
 
 # ----------------------------------------------------------------------------
 
@@ -145,10 +153,14 @@ Define derived quantities for use in later calculations
 eps = eps_0 * eps_r
 U_T = k * T / q_e
 U_D = U_T * log((N_a * N_d) / (n_i ** 2))
-x_n = root((2 * eps * U_D * N_a) / (q_e * N_d * (N_d + N_a)), 2)
+x_n = root((2 * eps * (U_D-U_ext) * N_a) / (q_e * N_d * (N_d + N_a)), 2)
+# x_n = root((2 * eps * (U_D) * N_a) / (q_e * N_d * (N_d + N_a)), 2)
 x_p = -1 * x_n * N_d / N_a
+w_RLZ = x_n - x_p
 D_n = U_T * mu_n
 D_p = U_T * mu_p
+L_n = root(tau_n * D_n, 2)
+L_p = root(tau_p * D_p, 2)
 
 # ----------------------------------------------------------------------------
 

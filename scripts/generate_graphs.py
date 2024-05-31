@@ -145,6 +145,9 @@ if __name__ == "__main__":
             xx, W_v_values = read_from_npy("W_v_values")
             print("Using previously saved values. Change USE_CACHED_VALUES in generate_graphs.py line 20 to False to calculate new ones instead.")
 
+            x_p = float(fill_values(x_p, parameter=parameter))
+            x_n = float(fill_values(x_n, parameter=parameter))
+
         except FileNotFoundError:
             print("Saved values missing. Please change USE_CACHED_VALUES in generate_graphs.py line 20 to False and try again.")
             exit()

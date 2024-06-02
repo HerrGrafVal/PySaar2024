@@ -1,5 +1,5 @@
 {
-	"Hinweise": {
+	"Hinweise" : {
 		"Format" : ["Koeffizient", "*10^x"],
 		"Einheit" : "Siehe scripts/symbols.py",
 		"Bandlücke" : "In eV",
@@ -46,5 +46,22 @@
 		"Effektive Zustandsdichte-Massen für Löcher" : [0.45, 0],
 		"Effektive Leitfähigkeits-Massen für Elektronen" : [0.067, 0],
 		"Effektive Leitfähigkeits-Massen für Löcher": [0.34, 0]
+	},
+	"Lebensdauer-Zeitkonstanten der Minoritäten" : {
+		"Halbleiter Element" : ["Mindestens 10^x in s", "Maximal 10^x in s"],
+		"Si" : [-10, -3],
+		"Ge" : [-6, -3],
+		"GaAs" : [-10, -8]
+	},
+	"Beweglichkeiten von Majoritätsträgern" : {
+		"Halbleiter Element" : {
+			"N/cm^3" : "Größenordnungen der Dotierung",
+			"Dotierungsatomsorte" :  "Beweglichkeiten in cm^2/Vs"},
+		"Si" : {
+			"N/cm^3" : [15, 16, 17, 18, 19],
+			"As" : [1359, 1177, 727, 284, 108],
+			"P" : [1362, 1184, 721, 277, 115],
+			"B" : [462, 429, 317, 153, 71]
+		}
 	}
 }

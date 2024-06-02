@@ -1,5 +1,6 @@
 from symbols import material_parameters as m_keys
 from symbols import constants as c_keys
+from symbols import second
 from pandas import DataFrame
 import json
 
@@ -20,16 +21,43 @@ def build_data_frame(name, var=0):
 
     Parameters
     : **name** *(string)* Key to dictionary from *JSON_PATH*
-    : **var** *(bool)* 0 to define material parameters, 1 to define universal constants
+    : **var** *(bool)* 0 to define material parameters, 1 to define universal constants, 2 for mu and tau
     """
-    df = DataFrame({"Symbol": [], "Koeffizient": [],
-                    "Ordnung": [], "Einheit": []})
-    keys = m_keys
-    if var:
-        keys = c_keys
-    for i in keys:
-        df.loc[i.desc] = [i, *parameters[name][i.desc], i.unit]
-    df.columns.name = name
+
+    if var == 2:
+        # Lebensdauer-Zeitkonstanten der Minoritäten
+        content = parameters[name]
+        content.pop("Halbleiter Element")
+        df = DataFrame({"Von": [], "Bis": [], "Einheit": []})
+        for element in content.keys():
+            df.loc[element] = [*content[element], second]
+        df.columns.name = "Halbleiter"
+
+    elif var == 3:
+        # Beweglichkeit von Majoritätsträgern
+        parameters[name].pop("Halbleiter Element")
+        substrat = list(parameters[name].keys())
+        for sub in substrat:
+            content = parameters[name][sub]
+            magnitudes = content.pop("N/cm^3")
+            df = DataFrame(content)
+            df.columns.name = "N/cm^3"
+            shift = {}
+            for i in range(len(magnitudes)):
+                shift[i] = magnitudes[i]
+            df.rename(index = shift, inplace = True)
+
+    else:
+        # Materialparameter & Naturkonstanten
+        df = DataFrame({"Symbol": [], "Koeffizient": [],
+                        "Ordnung": [], "Einheit": []})
+        keys = m_keys
+        if var:
+            keys = c_keys
+        for i in keys:
+            df.loc[i.desc] = [i, *parameters[name][i.desc], i.unit]
+        df.columns.name = name
+
     return df
 
 
@@ -133,6 +161,10 @@ for key in parameters.keys():
     typ = 0
     if key == "Naturkonstanten":
         typ = 1
+    elif key == "Lebensdauer-Zeitkonstanten der Minoritäten":
+        typ = 2
+    elif key == "Beweglichkeiten von Majoritätsträgern":
+        typ = 3
     values[key] = build_data_frame(key, typ)
 
 
@@ -142,6 +174,7 @@ if __name__ == "__main__":
     """
     name_list = []
     for key in values.keys():
-        name_list.append(key)
-        create_data_frame_tex(values[key], key)
+        if key not in ["Lebensdauer-Zeitkonstanten der Minoritäten", "Beweglichkeiten von Majoritätsträgern"]:
+            name_list.append(key)
+            create_data_frame_tex(values[key], key)
     create_pdf(name_list)

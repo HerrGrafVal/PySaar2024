@@ -5,7 +5,10 @@ default_parameter = {
     N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
     N_d: 5 * (10 ** 17) * (centimeter ** -3),
     T: 300 * kelvin,
-    U_ext : 0 * volt
+    W_t : 0.5 * W_g,
+    U_ext : 0 * volt,
+    "N-Dotation" : "As",
+    "P-Dotation" : "B"
 }
 
 ELEMENT = "Si"
@@ -42,6 +45,8 @@ def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursi
         if s in names:
             # Substitute symbol for value * unit
             func_in = func_in.subs(s, parameter[s])
+            if W_g in func_in.free_symbols:
+                func_in = fill_values(func_in, parameter = parameter, element = element)
 
     # Units containing prefixes have been converted to full ones in the previous steps
     # thanks to how they were defined in symbols.py - E.g. centimeter = meter/100
@@ -49,4 +54,24 @@ def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursi
         try: func_in = func_in.subs(unit, 1)
         except: pass
 
+
+    if tau_n in func_in.free_symbols:
+        func_in = func_in.subs(tau_n, pick_tau(typ = "n", parameter = parameter))
+    
+    if tau_p in func_in.free_symbols:
+        func_in = func_in.subs(tau_p, pick_tau(typ = "p", parameter = parameter))
+
     return func_in
+
+def pick_tau(typ, parameter):
+    from math import floor, log10
+    if typ == "n":
+        dot = float(parameter[N_d] * (centimeter ** 3))
+        mag = floor(log10(dot))
+        mu = values["Beweglichkeiten von Majoritätsträgern"].loc()[mag]
+        return mu[parameter["N-Dotation"]]
+    elif typ == "p":
+        dot = float(parameter[N_a] * (centimeter ** 3))
+        mag = floor(log10(dot))
+        mu = values["Beweglichkeiten von Majoritätsträgern"].loc()[mag]
+        return mu[parameter["P-Dotation"]]

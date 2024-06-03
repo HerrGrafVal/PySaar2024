@@ -5,21 +5,24 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch as Arrow
 # from matplotlib.ticker import EngFormatter as Form
 from sympy import lambdify
-from numpy import linspace
+from numpy import arange, interp, array
 
 # ----------------------------------------------------------------------------
-
-# Change USE_CACHED_VALUES to False after changing WIDTH
-WIDTH = 3
 
 parameter = {
     N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
     N_d: 5 * (10 ** 17) * (centimeter ** -3),
     T: 300 * kelvin,
-    U_ext : 0 * volt
+    U_ext : 0 * volt,
+    A : 19.625 * (milimeter ** 2),
+    "N-Dotation" : "As",
+    "P-Dotation" : "B",
+    WIDTH : 3
 }
 
 USE_CACHED_VALUES = True
+PLOT_CURRENT = True
+THRESHOLD = 10000
 
 # ----------------------------------------------------------------------------
 
@@ -174,9 +177,9 @@ if __name__ == "__main__":
 
         x_p = float(fill_values(x_p, parameter=parameter))
         x_n = float(fill_values(x_n, parameter=parameter))
-        w_p = abs(x_p * WIDTH)
-        w_n = x_n * WIDTH
-        xx = linspace(-1 * w_p, w_n, 1000)
+        w_p = float(fill_values(w_p, parameter = parameter))
+        w_n = float(fill_values(w_n, parameter = parameter))
+        xx = arange(-1 * w_p, w_n, 1000)
 
         """
         Lambdify all functions in func_names
@@ -211,8 +214,8 @@ if __name__ == "__main__":
     Generate subplots and pass them to render functions
     """
 
-    fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
-    fig.subplots_adjust(hspace=1.5)
+    no_ext_volt_fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
+    no_ext_volt_fig.subplots_adjust(hspace=1.5)
 
     render_rho(plt_rho, xx, rho_values)
     render_E(plt_E, xx, E_values)
@@ -220,6 +223,61 @@ if __name__ == "__main__":
     render_W(plt_W, xx, W_v_values)
 
     # ----------------------------------------------------------------------------
+
+    """
+    Plot current over voltage
+    """
+    VOLTAGE_START = 0
+    if PLOT_CURRENT:
+        from modell import calculate_current as cc
+        uu = [VOLTAGE_START]
+        ii = [0]
+        while ii[-1] < THRESHOLD:
+            ii.append(cc(parameter, uu[-1]))
+            uu.append(uu[-1]+0.01)
+        ii.pop(0)
+        uu.pop(-1)
+
+        plt.figure()
+        axes = plt.gca()
+
+        # Plot data and set axes title
+        line = axes.plot(uu, ii, label="Simulation")
+        axes.set_title("Strom-Spannungs-Kennlinie", loc="center")
+
+        # Center x, y axis, hide additional ones, add arrow tips
+        axes.spines[["left", "bottom"]].set_position(("data", 0))
+        axes.spines[["top", "right"]].set_visible(False)
+        axes.plot(1, 0, ">k", transform=axes.get_yaxis_transform(), clip_on=False)
+        axes.plot(0, 1, "^k", transform=axes.get_xaxis_transform(), clip_on=False)
+
+        # Adjust axis length and labels
+        axes.set_xlabel("$U\\ in\\ V$")
+        axes.set_ylabel("$I\\ in\\ A$", rotation=0)
+        # axes.set_ylim(top=max(abs(y)) * 1.1)
+        axes.xaxis.set_label_coords(1.07, 0, transform=axes.get_yaxis_transform())
+        axes.yaxis.set_label_coords(0, 1.025, transform=axes.get_xaxis_transform())
+
+    # ----------------------------------------------------------------------------
+
+        """
+        Piecewise linear interpolation of simulation result
+        """
+        first_above = uu[-1]
+        last_below = round(0.05 * (first_above//0.05), 2)
+        UU = interp(first_above, array(uu).astype(float), array(ii).astype(float))
+        axes.plot([VOLTAGE_START, last_below, first_above], [0, 0, UU], label="Interpolation")
+        axes.legend(loc="lower left")
+        xticks = [round(tick, 2) for tick in axes.get_xticks()]
+        xticklabels = [str(tick) for tick in xticks]
+        if last_below not in xticks:
+            xticks.append(last_below)
+            xticklabels.append("$U_F$")
+        else:
+            index = xticks.index(last_below)
+            xticklabels[index] = f"$U_F$ = {last_below}V"
+        axes.set_xticks(xticks, xticklabels)
+
 
     """
     Show figure

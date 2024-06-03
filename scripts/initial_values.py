@@ -36,6 +36,8 @@ def build_data_frame(name, var=0):
     elif var == 3:
         # Beweglichkeit von Majoritätsträgern
         parameters[name].pop("Halbleiter Element")
+
+        # Currently only returning last substrat values, "Si" in default_parameters.json
         substrat = list(parameters[name].keys())
         for sub in substrat:
             content = parameters[name][sub]

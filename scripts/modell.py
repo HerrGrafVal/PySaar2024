@@ -1,7 +1,8 @@
 from symbols import *
 from regions import NeutralPRegion, NeutralNRegion, P_SCR, N_SCR
 from cache import save_to_file
-from sympy import Piecewise
+from sympy import Piecewise, exp, coth
+from read_dataframe import fill_values
 
 # ----------------------------------------------------------------------------
 
@@ -25,78 +26,48 @@ PN = [ONE, TWO, THREE, FOUR]
 
 # ----------------------------------------------------------------------------
 
-def calculate_current(parameter):
+def calculate_current(parameter, U):
     """
-    Returns current (float * ampere) based on parameter
+    Returns current/ampere (float) based on parameter
 
     Parameter
     : **parameter** *(dict)* Must be in form of read_dataframe.default_parameter
+    : **U** *(float)* External voltage
     """
 
-    # Additional imports
-    from sympy import exp, coth, lambdify
-    from read_dataframe import fill_values
-    import scipy.integrate as integrate
+    if U in [0, 0 * volt]:
+        return 0
 
-    # Update areas ONE-FOUR to match voltage U
-    U = parameter[U_ext]   
-    for area in PN:
-        area.apply_voltage(U)
+    I_s = calculate_I_s(parameter, U)
+    I = I_s * (exp(U / U_T) - 1)
+    current = fill_values(I, parameter = parameter).evalf()
 
+    return current
 
+def calculate_I_s(parameter, U):
     """
-    I_rg is defined by an integral that cannot be solved in closed form
-    We approximate it numerically for TWO and THREE individually then add both together
-    """
+    Returns saturation current/ampere (float) based on parameter
 
-    """
-    ToDo:
-    pick mu during fill_values
+    Parameter
+    : **parameter** *(dict)* Must be in form of read_dataframe.default_parameter
+    : **U** *(float)* External voltage, needed for calculation of SCR width
     """
 
-    # Setup for numeric integration
-    R_over_RLZ = 0
-    for area in [TWO, THREE]:
-        
-        # Get area functions
-        W_v_ = area.funcs[W_v]
-        W_c = W_v_ + W_g
-        n = area.n
-        p = area.p
+    if U in [0, 0 * volt]:
+        return 0
 
-        # Prevent SCR width errors after sufficient external voltage
-        if fill_values(U, parameter = parameter) >= fill_values(U_D, parameter = parameter): 
-            global x_n, x_p
-            x_n = 0 * meter
-            x_p = 0 * meter
+    parameter[U_ext] = U
 
-        # Setup integration interval
-        a = 0
-        b = 0
-        if area == TWO: a = float(fill_values(x_p, parameter = parameter))
-        if area == THREE: b = float(fill_values(x_n, parameter = parameter))
+    # Prevent SCR width errors after sufficient external voltage
+    if fill_values(U * volt) >= fill_values(U_D, parameter = parameter): 
+        # x_n = 0 * meter
+        # x_p = 0 * meter
+        I_s = q_e * A * (ONE.np0 * D_n / L_n * coth((w_p) / L_n) + FOUR.pn0 * D_p / L_p * coth((w_n) / L_p))
+    else:
+        # Diode current
+        I_s = q_e * A * (ONE.np0 * D_n / L_n * coth((w_p + x_p) / L_n) + FOUR.pn0 * D_p / L_p * coth((w_n - x_n) / L_p))
 
-        # Define n1, p1
-        n1 = N_c * exp(-(W_c - W_t)/k*T)
-        p1 = N_v * exp(-(W_t - W_v_)/k*T)
-
-        # Sympy equation for R
-        R = (p * n - n_i**2) / ((p1 + p) * tau_n + (n1 + n) * tau_p)
-
-        # Lambdify equation after substituting in values
-        R_func = lambdify(x, fill_values(R, parameter = parameter))
-
-        # R_func(x) --> overflow encountered in exp -> nan :(
-
-        # Approximate integral
-        R_over_RLZ += integrate.quad(R_func, a, b)[0]
-
-    # Diode current
-    I_rg = q_e * A * R_over_RLZ
-    I_s = q_e * A * (ONE.np0 * D_n / L_n * coth((w_p + x_p) / L_n) + FOUR.pn0 * D_p / L_p * coth((w_n - x_n) / L_p))
-    I = I_s * (exp(U / U_T) - 1) + I_rg
-    
-    return R_over_RLZ
+    return fill_values(I_s, parameter = parameter).evalf()
 
 # ----------------------------------------------------------------------------
 

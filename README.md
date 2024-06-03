@@ -17,10 +17,10 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [ ] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
 - [ ] pn-Übergang mit Heatmaps *wichtier Größen*
 ### p-n-Übergang außerhalb des thermodynamischen Gleichgewichts
-- [ ] Externe Spannung und Stromfluss durch Diode implementieren
-- [ ] Kennlinie visualiseren
-- [ ] Kennlinie mit stückweiser linearer Regression approximieren
-- [ ] Flussspannung aus Regressionsergebnis ermitteln
+- [x] Externe Spannung und Stromfluss durch Diode implementieren
+- [x] Kennlinie visualiseren
+- [x] Kennlinie mit stückweiser linearer Regression approximieren
+- [x] Flussspannung aus Regressionsergebnis ermitteln
 ### Präsentation
 - [ ] Folien vorbereiten
 - [ ] Präsentation in vorgegebener Zeit proben

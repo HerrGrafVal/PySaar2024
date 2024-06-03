@@ -7,8 +7,10 @@ default_parameter = {
     T: 300 * kelvin,
     W_t : 0.5 * W_g,
     U_ext : 0 * volt,
+    A : 19.625 * (milimeter ** 2),
     "N-Dotation" : "As",
-    "P-Dotation" : "B"
+    "P-Dotation" : "B",
+    WIDTH : 3
 }
 
 ELEMENT = "Si"
@@ -48,22 +50,34 @@ def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursi
             if W_g in func_in.free_symbols:
                 func_in = fill_values(func_in, parameter = parameter, element = element)
 
+    if tau_n in func_in.free_symbols:
+        func_in = func_in.subs(tau_n, pick_tau())
+    
+    if tau_p in func_in.free_symbols:
+        func_in = func_in.subs(tau_p, pick_tau())
+
+    if mu_n in func_in.free_symbols:
+        func_in = func_in.subs(mu_n, pick_mu(typ = "n", parameter = parameter))
+
+    if mu_p in func_in.free_symbols:
+        func_in = func_in.subs(mu_p, pick_mu(typ = "p", parameter = parameter))
+
     # Units containing prefixes have been converted to full ones in the previous steps
     # thanks to how they were defined in symbols.py - E.g. centimeter = meter/100
     for unit in full_units:
         try: func_in = func_in.subs(unit, 1)
         except: pass
-
-
-    if tau_n in func_in.free_symbols:
-        func_in = func_in.subs(tau_n, pick_tau(typ = "n", parameter = parameter))
     
-    if tau_p in func_in.free_symbols:
-        func_in = func_in.subs(tau_p, pick_tau(typ = "p", parameter = parameter))
-
     return func_in
 
-def pick_tau(typ, parameter):
+def pick_tau():
+    df = values["Lebensdauer-Zeitkonstanten der Minoritäten"]
+    tau_range = list(df.loc()[ELEMENT])
+    # tau_range = [From, To, Unit]
+    tau_mag = (tau_range[0] + tau_range[1])/2
+    return (10 ** tau_mag) * tau_range[2]
+
+def pick_mu(typ, parameter):
     from math import floor, log10
     if typ == "n":
         dot = float(parameter[N_d] * (centimeter ** 3))

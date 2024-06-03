@@ -96,6 +96,8 @@ x_p = Sym("x_p", "Grenze p-Raumladungszone", nanometer)
 w_n = Sym("w_n", "Weite n-Bahngebiet", nanometer)
 x_n = Sym("x_n", "Grenze n-Raumladungszone", nanometer)
 
+WIDTH = Sym("w_n / x_n", "Verhältnis: Weite der Bahngebiete : Ausdehnung der RLZ", 1)
+
 U_ext = Sym("U_{ext}", "Extern angelegte Spannung", volt)
 
 W_t = Sym("W_t", "Trap Energieniveaus (Halbleiter Verunreinigung)", electron_volt)
@@ -154,8 +156,14 @@ eps = eps_0 * eps_r
 U_T = k * T / q_e
 U_D = U_T * log((N_a * N_d) / (n_i ** 2))
 x_n = root((2 * eps * (U_D-U_ext) * N_a) / (q_e * N_d * (N_d + N_a)), 2)
-# x_n = root((2 * eps * (U_D) * N_a) / (q_e * N_d * (N_d + N_a)), 2)
 x_p = -1 * x_n * N_d / N_a
+
+
+x_n0 = root((2 * eps * U_D * N_a) / (q_e * N_d * (N_d + N_a)), 2)
+w_n = x_n0 * WIDTH
+x_p0 = -1 * x_n0 * N_d / N_a
+w_p = abs(x_p0 * WIDTH)
+
 w_RLZ = x_n - x_p
 D_n = U_T * mu_n
 D_p = U_T * mu_p

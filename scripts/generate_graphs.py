@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch as Arrow
 # from matplotlib.ticker import EngFormatter as Form
 from sympy import lambdify
-from numpy import arange, interp, array
+from numpy import linspace, interp, array
 
 # ----------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ parameter = {
 }
 
 USE_CACHED_VALUES = True
-PLOT_CURRENT = True
+PLOT_CURRENT = False
 THRESHOLD = 10000
 
 # ----------------------------------------------------------------------------
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         x_n = float(fill_values(x_n, parameter=parameter))
         w_p = float(fill_values(w_p, parameter = parameter))
         w_n = float(fill_values(w_n, parameter = parameter))
-        xx = arange(-1 * w_p, w_n, 1000)
+        xx = linspace(-1 * w_p, w_n, 1000)
 
         """
         Lambdify all functions in func_names

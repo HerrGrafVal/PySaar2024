@@ -38,6 +38,7 @@ def save_to_file(filename, expr):
     : **expr** *(sympy expression)* to save
     """
 
+    check_savefoler()
     with open(SAVE_FOLDER + filename, "w") as file:
         file.write(str(expr))
 
@@ -50,6 +51,7 @@ def save_to_npy(filename, x, y):
     : **[x, y]** *(numpy.arrays)* to save
     """
 
+    check_savefoler()
     values = array([x, y])
     save(SAVE_FOLDER + filename + ".npy", values)
 
@@ -65,3 +67,14 @@ def read_from_npy(filename):
     x = values[0]
     y = values[1]
     return [x, y]
+
+def check_savefoler():
+    """
+    Checks for directory at SAVE_FOLDER and creates one if required
+    """
+
+    import os
+    if os.path.isdir(SAVE_FOLDER):
+        return
+    else:
+        os.mkdir(SAVE_FOLDER)

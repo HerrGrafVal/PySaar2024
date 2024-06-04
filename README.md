@@ -18,11 +18,11 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [ ] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
 - [ ] pn-Übergang mit Heatmaps *wichtier Größen*
 ### p-n-Übergang im thermodynamischen Gleichgewicht - Numerisch
-- [] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
-    1. [] *Wichtige Größen* als solche bestimmen
-    2. [] Darstellung in Achsendiagrammen, Bändermodell
-- [] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
-- [] Visualisierung des p-n-Übergangs implementieren
+- [ ] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
+    1. [ ] *Wichtige Größen* als solche bestimmen
+    2. [ ] Darstellung in Achsendiagrammen, Bändermodell
+- [ ] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
+- [ ] Visualisierung des p-n-Übergangs implementieren
 - [ ] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
 - [ ] pn-Übergang mit Heatmaps *wichtier Größen*
 ### p-n-Übergang außerhalb des thermodynamischen Gleichgewichts

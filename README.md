@@ -31,8 +31,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] Kennlinie mit stückweiser linearer Regression approximieren
 - [x] Flussspannung aus Regressionsergebnis ermitteln
 ### Dokumentation
-- [ ] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
-- [ ] Docs in HTML überprüfen
+- [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
+- [ ] Docs korrigieren
 ### Präsentation
 - [ ] Folien vorbereiten
 - [ ] Präsentation in vorgegebener Zeit proben

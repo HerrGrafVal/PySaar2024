@@ -38,13 +38,13 @@ def render(axes, x, y, title, **kwargs):
     : **x, y** *(numpy.array)* Data to plot against each other
     : **title** *(string)* Plot title to display
     : **kwargs**
-        : **label** *(string)* Label to pass onto line object created from x, y
-        : **center_title** *(bool)* Whether or not to center the title. Default title location is left
-        : **adjust_ticks** *(bool)* Whether or not adjustment to ticks should be conducted
-        : **include_zero** *(bool)* Whether or not x = 0 should be marked on x axis
-        : **arrow** *(bool)* Whether or not x and y axis are drawn with arrow tips
-        : **bottom** *(bool)* Whether or not the x axis should be moved down to min(y)
-        : **xlabel_coord** & **ylabel_coord** *(float)* Coordinates for x, y axis label
+    : **label** *(string)* Label to pass onto line object created from x, y
+    : **center_title** *(bool)* Whether or not to center the title. Default title location is left
+    : **adjust_ticks** *(bool)* Whether or not adjustment to ticks should be conducted
+    : **include_zero** *(bool)* Whether or not x = 0 should be marked on x axis
+    : **arrow** *(bool)* Whether or not x and y axis are drawn with arrow tips
+    : **bottom** *(bool)* Whether or not the x axis should be moved down to min(y)
+    : **xlabel_coord** & **ylabel_coord** *(float)* Coordinates for x, y axis label
     """
 
     # Setup

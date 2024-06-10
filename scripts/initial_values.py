@@ -123,7 +123,7 @@ def create_data_frame_tex(df, name, typ):
     : **name** *(string)* Desired file name
     : **typ** *(int)* 0 for material parameters or universal constants, 2 for tau, 2 for mu
     """
-    name = name.replace("-", "")
+    name = name.replace("-", " ")
 
     with open("../initial_values/" + name + ".tex", "w", encoding="utf8") as file:
         float_format = "{:." + str(FLOAT_DIGITS) + "f}"
@@ -157,7 +157,7 @@ def create_pdf(name_list):
     doc.preamble.append(Command("usepackage", "booktabs"))
     doc.append(Command("noindent"))
     for name in name_list:
-        name = name.replace("-", "")
+        name = name.replace("-", " ")
         with doc.create(Section(name)):
             doc.append(Command("input", name + ".tex"))
             if name == "Beweglichkeiten von Majoritätsträgern":

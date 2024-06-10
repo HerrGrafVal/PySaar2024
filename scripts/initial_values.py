@@ -24,7 +24,7 @@ def build_data_frame(name, var=0):
 
     Parameters
     : **name** *(string)* Key to dictionary from *JSON_PATH*
-    : **var** *(bool)* 0 to define material parameters, 1 to define universal constants, 2 for mu and tau
+    : **var** *(int)* 0 to define material parameters, 1 to define universal constants, 2 for tau, 3 for mu
     """
 
     if var == 2:
@@ -46,7 +46,7 @@ def build_data_frame(name, var=0):
             content = parameters[name][sub]
             magnitudes = content.pop("N/cm^3")
             df = DataFrame(content)
-            df.columns.name = "N/cm^3"
+            df.columns.name = "$N/cm^3$"
             shift = {}
             for i in range(len(magnitudes)):
                 shift[i] = magnitudes[i]
@@ -114,22 +114,35 @@ def display_unit(unit_in):
     return "$" + text + "$"
 
 
-def create_data_frame_tex(df, name):
+def create_data_frame_tex(df, name, typ):
     """
     Creates *../initial_values/**name**.tex* with LATEX Table containing **df** contents.
 
     Parameters
     : **df** *(pandas.DataFrame)* Data to be rendered
     : **name** *(string)* Desired file name
+    : **typ** *(int)* 0 for material parameters or universal constants, 2 for tau, 2 for mu
     """
+    name = name.replace("-", "")
+
     with open("../initial_values/" + name + ".tex", "w", encoding="utf8") as file:
         float_format = "{:." + str(FLOAT_DIGITS) + "f}"
-        file.write(df.to_latex(formatters={
-            "Symbol": lambda x: "$" + x.name + "$",
-            "Ordnung": lambda y: "$10^{" + str(y) + "}$" if y != 0 else 1,
-            "Einheit": lambda z: display_unit(z)
-        }, float_format=float_format.format
-        ))
+
+        if typ == 0: # Materialparameter & Naturkonstanten
+            file.write(df.to_latex(formatters={
+                "Symbol": lambda x: "$" + x.name + "$",
+                "Ordnung": lambda y: "$10^{" + str(y) + "}$" if y != 0 else 1,
+                "Einheit": lambda z: display_unit(z)
+            }, float_format=float_format.format
+            ))
+        elif typ == 2: # Lebensdauer-Zeitkonstanten der Minoritäten
+            file.write(df.to_latex(formatters={
+                    "Von": lambda x: "$10^{" + str(x) + "}$",
+                    "Bis": lambda y: "$10^{" + str(y) + "}$",
+                }))
+        elif typ == 3: # Beweglichkeit von Majoritätsträgern
+            df.rename(index = {(x):("$10^{" + str(x) + "}$") for x in list(df.index)}, inplace = True)
+            file.write(df.to_latex())
 
 
 def create_pdf(name_list):
@@ -139,13 +152,16 @@ def create_pdf(name_list):
     Parameters
     : **name_list** *(list of strings)* .tex files to be included
     """
-    from pylatex import Document, Command, Section
+    from pylatex import Document, Command, Section, NoEscape
     doc = Document("basic")
     doc.preamble.append(Command("usepackage", "booktabs"))
     doc.append(Command("noindent"))
     for name in name_list:
+        name = name.replace("-", "")
         with doc.create(Section(name)):
             doc.append(Command("input", name + ".tex"))
+            if name == "Beweglichkeiten von Majoritätsträgern":
+                doc.append(NoEscape("$[\\mu]$ $=$ $\\frac{cm^{2}}{Vs}$"))
     doc.generate_pdf(PDF_PATH,
                      compiler="pdfLaTeX")
 
@@ -181,7 +197,11 @@ if __name__ == "__main__":
     """
     name_list = []
     for key in values.keys():
-        if key not in ["Lebensdauer-Zeitkonstanten der Minoritäten", "Beweglichkeiten von Majoritätsträgern"]:
-            name_list.append(key)
-            create_data_frame_tex(values[key], key)
+        typ = 0
+        if key == "Lebensdauer-Zeitkonstanten der Minoritäten":
+            typ = 2
+        elif key == "Beweglichkeiten von Majoritätsträgern":
+            typ = 3
+        name_list.append(key)
+        create_data_frame_tex(values[key], key, typ)
     create_pdf(name_list)

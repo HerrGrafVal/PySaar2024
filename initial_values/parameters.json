@@ -1,5 +1,5 @@
 {
-	"Hinweise" : {
+	"Materialparameter & Naturkonstanten" : {
 		"Format" : ["Koeffizient", "*10^x"],
 		"Einheit" : "Siehe scripts/symbols.py",
 		"Bandlücke" : "In eV",

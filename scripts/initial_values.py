@@ -4,6 +4,8 @@ from symbols import second
 from pandas import DataFrame
 import json
 
+# ----------------------------------------------------------------------------
+
 # Number of digits to display when passing `float` to `create_data_frame_pdf()`
 FLOAT_DIGITS = 3
 
@@ -14,6 +16,7 @@ JSON_PATH = "../initial_values/parameters.json"
 PDF_PATH = "../initial_values/Initial Parameters.pdf"
 PDF_PATH = PDF_PATH[:-4]
 
+# ----------------------------------------------------------------------------
 
 def build_data_frame(name, var=0):
     """
@@ -146,6 +149,7 @@ def create_pdf(name_list):
     doc.generate_pdf(PDF_PATH,
                      compiler="pdfLaTeX")
 
+# ----------------------------------------------------------------------------
 
 """
 Create **values** dictionary with key : DataFrame pairs
@@ -155,7 +159,7 @@ in `symbols.py` and `JSON_PATH`
 
 with open(JSON_PATH, "r", encoding="utf8") as file:
     parameters = json.load(file)
-parameters.pop("Hinweise")
+parameters.pop("Materialparameter & Naturkonstanten")
 
 values = {}
 
@@ -169,6 +173,7 @@ for key in parameters.keys():
         typ = 3
     values[key] = build_data_frame(key, typ)
 
+# ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     """

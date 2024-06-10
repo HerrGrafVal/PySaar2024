@@ -1,11 +1,11 @@
 from symbols import *
-from cache import read_from_file, save_to_npy, read_from_npy
 from read_dataframe import fill_values
+from cache import read_from_file, save_to_npy, read_from_npy
+from sympy import lambdify
+from numpy import linspace, interp, array
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch as Arrow
 # from matplotlib.ticker import EngFormatter as Form
-from sympy import lambdify
-from numpy import linspace, interp, array
 
 # ----------------------------------------------------------------------------
 
@@ -20,52 +20,77 @@ parameter = {
     WIDTH : 3
 }
 
-USE_CACHED_VALUES = True
-PLOT_CURRENT = False
+USE_CACHED_PN_VALUES = True
+USE_CACHED_CURRENT_VALUES = True
+HIDE_CACHE_LOG = False
+PLOT_PN = True
+PLOT_CURRENT = True
 THRESHOLD = 10000
 
 # ----------------------------------------------------------------------------
 
-def render(axes, x, y, title, xlabel_coord=1.025, ylabel_coord=1.1, label=None, include_zero=False, arrow=True, bottom=False):
+def render(axes, x, y, title, **kwargs):
     """
-    Base function to plot data nicely. Returns line object drawn in axes
+    Base function to plot data. Returns line object drawn in axes
 
     Parameters
     : **axes** *(matplotlib.axes)* Axes to plot to
     : **x, y** *(numpy.array)* Data to plot against each other
     : **title** *(string)* Plot title to display
-    : **xlabel_coord, ylabel_coord** *(float)* Optional, coordinates for x, y axis label
-    : **label** *(string)* Optional, label to pass onto line object created from x, y
-    : **include_zero** *(bool)* Optional, whether or not x = 0 should be marked on x axis
-    : **arow** *(bool)* Optional, whether or not x and y axis are drawn with arrow tips
-    : **bottom** *(bool)* Optional, whether or not the x axis should be moved down to min(y)
+    : **kwargs**
+        : **label** *(string)* Label to pass onto line object created from x, y
+        : **center_title** *(bool)* Whether or not to center the title. Default title location is left
+        : **adjust_ticks** *(bool)* Whether or not adjustment to ticks should be conducted
+        : **include_zero** *(bool)* Whether or not x = 0 should be marked on x axis
+        : **arrow** *(bool)* Whether or not x and y axis are drawn with arrow tips
+        : **bottom** *(bool)* Whether or not the x axis should be moved down to min(y)
+        : **xlabel_coord** & **ylabel_coord** *(float)* Coordinates for x, y axis label
     """
 
+    # Setup
+    args = {
+    "label" : None, 
+    "center_title" : False, 
+    "adjust_ticks" : True, 
+    "include_zero" : False, 
+    "arrow" : True, 
+    "bottom" : False,
+    "xlabel_coord" : 1.025, 
+    "ylabel_coord" : 1.1
+    }
+
+    args.update(kwargs)
+
     # Plot data and set axes title
-    line = axes.plot(x, y, label=label)
-    axes.set_title(title, loc="left")
+    line = axes.plot(x, y, label=args["label"])
+    if args["center_title"]:
+        axes.set_title(title, loc="center")
+    else:
+        axes.set_title(title, loc="left")
 
     # Center x, y axis, hide additional ones
     axes.spines[["left", "bottom"]].set_position(("data", 0))
     axes.spines[["top", "right"]].set_visible(False)
-    if bottom: # Move x axis down to min(y)
+    if args["bottom"]: # Move x axis down to min(y)
         axes.spines[["bottom"]].set_position(("data", min(y)))
 
-    if arrow: # Draw arrow tips for x, y axis
+    if args["arrow"]: # Draw arrow tips for x, y axis
         axes.plot(1, 0, ">k", transform=axes.get_yaxis_transform(), clip_on=False)
         axes.plot(0, 1, "^k", transform=axes.get_xaxis_transform(), clip_on=False)
 
+    
     # Adjust axis length and labels
     axes.set_xlabel("$x$")
-    axes.set_ylim(top=max(abs(y)) * 1.1)
-    axes.xaxis.set_label_coords(xlabel_coord, 0, transform=axes.get_yaxis_transform())
-    axes.yaxis.set_label_coords(0, ylabel_coord, transform=axes.get_xaxis_transform())
+    axes.xaxis.set_label_coords(args["xlabel_coord"], 0, transform=axes.get_yaxis_transform())
+    axes.yaxis.set_label_coords(0, args["ylabel_coord"], transform=axes.get_xaxis_transform())
 
-    # Adjust x ticks and labels
-    if include_zero:
-        axes.set_xticks([x[0], x_p, 0, x_n, x[-1]], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
-    else:
-        axes.set_xticks([x[0], x_p, x_n, x[-1]], ["$-w_p$", "$x_p$", "$x_n$", "$w_n$"])
+    if args["adjust_ticks"]:
+        axes.set_ylim(top=max(abs(y)) * 1.1)
+        # Adjust x ticks and labels
+        if args["include_zero"]:
+            axes.set_xticks([x[0], x_p, 0, x_n, x[-1]], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
+        else:
+            axes.set_xticks([x[0], x_p, x_n, x[-1]], ["$-w_p$", "$x_p$", "$x_n$", "$w_n$"])
 
     # Return line object drawn in axes
     return line
@@ -110,8 +135,6 @@ def render_W(axes, x, y):
     Adjust render() to plot band structure
     """
 
-    # axes.set_ylabel("$W_V(x)$", rotation = 0)
-
     # Call render() for W_V, plot W_C, remove y ticks
     render(axes, x, y, "Bandverläufe", label="$W_V$", arrow=False, bottom=True)[0]
     axes.plot(x, y + fill_values(W_g), color="blue", label="$W_C$")
@@ -136,151 +159,165 @@ def render_W(axes, x, y):
     axes.annotate("$e U_D$", (1.55 * x_n, 0.75 * y[-1]))
 
 
+def render_current(axes, uu, ii):
+    """
+    Adjust render() to plot current over voltage
+    """
+
+    # Call render() for I(U)
+    render(axes, uu, ii, "Strom-Spannungs-Kennlinie", label = "Simulation", center_title = True, adjust_ticks = False)
+    
+    # Adjust axis labels
+    axes.set_xlabel("$U\\ in\\ V$")
+    axes.set_ylabel("$I\\ in\\ A$", rotation=0)
+    axes.xaxis.set_label_coords(1.07, 0, transform=axes.get_yaxis_transform())
+    axes.yaxis.set_label_coords(0, 1.025, transform=axes.get_xaxis_transform())
+
+    # Piecewise linear interpolation of I(U) results
+    first_above = uu[-1]
+    last_below = round(0.05 * (first_above//0.05), 2)
+    UU = interp(first_above, uu.astype(float), ii.astype(float))
+    
+    # Plot linear approximation
+    axes.plot([VOLTAGE_START, last_below, first_above], [0, 0, UU], label="Interpolation")
+    
+    # Show legend
+    axes.legend(loc="lower left")
+
+    # Adjust xticks
+    xticks = [round(tick, 2) for tick in axes.get_xticks()]
+    xticklabels = [str(tick) for tick in xticks]
+    if last_below not in xticks:
+        xticks.append(last_below)
+        xticklabels.append("$U_F$")
+    else:
+        index = xticks.index(last_below)
+        xticklabels[index] = f"$U_F$ = {last_below}V"
+    axes.set_xticks(xticks, xticklabels)
+
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
-    if USE_CACHED_VALUES: # Read numpy arrays from save
-        try:
-            xx, rho_values = read_from_npy("rho_values")
-            xx, E_values = read_from_npy("E_values")
-            xx, phi_values = read_from_npy("phi_values")
-            xx, W_v_values = read_from_npy("W_v_values")
-            print("Using previously saved values. Change USE_CACHED_VALUES in generate_graphs.py line 20 to False to calculate new ones instead.")
+    if PLOT_PN: # Plot rho(x), E(x), phi(x), W(x)
 
+        if USE_CACHED_PN_VALUES: # Read numpy arrays from save
+            try:
+                xx, rho_values = read_from_npy("rho_values")
+                xx, E_values = read_from_npy("E_values")
+                xx, phi_values = read_from_npy("phi_values")
+                xx, W_v_values = read_from_npy("W_v_values")
+                
+                if not HIDE_CACHE_LOG:
+                    print("Using previously saved pn-values. Change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False to calculate new ones instead.")
+
+                x_p = float(fill_values(x_p, parameter=parameter))
+                x_n = float(fill_values(x_n, parameter=parameter))
+
+            except FileNotFoundError:
+                print("Saved pn-values missing. Please change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False and try again.")
+                exit()
+
+        else: # Calculate numpy arrays to plot
+
+            # Read sympy functions from save
+            func_names = ["rho", "E", "phi", "W_v"]
+            try:
+                for i in func_names:
+                    exec(i + " = read_from_file('" + i + "_results.txt', namespace)")
+            except FileNotFoundError:
+                print("Saved pn-function(s) missing. Please execute modell.py and try again.")
+                exit()
+
+            # Calculate relevant x vector
             x_p = float(fill_values(x_p, parameter=parameter))
             x_n = float(fill_values(x_n, parameter=parameter))
+            w_p = float(fill_values(w_p, parameter = parameter))
+            w_n = float(fill_values(w_n, parameter = parameter))
+            xx = linspace(-1 * w_p, w_n, 1000)
 
-        except FileNotFoundError:
-            print("Saved values missing. Please change USE_CACHED_VALUES in generate_graphs.py line 20 to False and try again.")
-            exit()
-
-    # ----------------------------------------------------------------------------
-
-    else:
-
-        """
-        Read sympy functions from save
-        """
-
-        func_names = ["rho", "E", "phi", "W_v"]
-        try:
+            # Lambdify all functions in func_names
             for i in func_names:
-                exec(i + " = read_from_file('" + i + "_results.txt', namespace)")
-        except FileNotFoundError:
-            print("Saved function(s) missing. Please execute modell.py and try again.")
-            exit()
+                exec(i + "_func = lambdify(x, fill_values(" + i + ", parameter = parameter))", globals())
 
-        """
-        Calculate relevant x vector
-        """
+            # Call lambdified function to create numpy arrays
+            rho_values = rho_func(xx)
+            E_values = E_func(xx)
+            phi_values = phi_func(xx)
+            W_v_values = W_v_func(xx)
 
-        x_p = float(fill_values(x_p, parameter=parameter))
-        x_n = float(fill_values(x_n, parameter=parameter))
-        w_p = float(fill_values(w_p, parameter = parameter))
-        w_n = float(fill_values(w_n, parameter = parameter))
-        xx = linspace(-1 * w_p, w_n, 1000)
+            # Save numpy arrays to files
+            save_to_npy("rho_values", xx, rho_values)
+            save_to_npy("E_values", xx, E_values)
+            save_to_npy("phi_values", xx, phi_values)
+            save_to_npy("W_v_values", xx, W_v_values)
 
-        """
-        Lambdify all functions in func_names
-        """
+            if not HIDE_CACHE_LOG:
+                print("pn-Values saved. You may now change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to True to speed up future calls to this script")
 
-        for i in func_names:
-            exec(i + "_func = lambdify(x, fill_values(" + i + ", parameter = parameter))", globals())
+# ----------------------------------------------------------------------------
 
-        """
-        Call lambdified function to create numpy arrays
-        """
+        # Generate subplots and pass them to render functions
+        no_ext_volt_fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
+        no_ext_volt_fig.subplots_adjust(hspace=1.5)
 
-        rho_values = rho_func(xx)
-        E_values = E_func(xx)
-        phi_values = phi_func(xx)
-        W_v_values = W_v_func(xx)
+        render_rho(plt_rho, xx, rho_values)
+        render_E(plt_E, xx, E_values)
+        render_phi(plt_phi, xx, phi_values)
+        render_W(plt_W, xx, W_v_values)
 
-        """
-        Save numpy arrays to files
-        """
+# ----------------------------------------------------------------------------
 
-        save_to_npy("rho_values", xx, rho_values)
-        save_to_npy("E_values", xx, E_values)
-        save_to_npy("phi_values", xx, phi_values)
-        save_to_npy("W_v_values", xx, W_v_values)
+    if PLOT_CURRENT: # Plot current over voltage
 
-        print("Values saved. You may now change USE_CACHED_VALUES in generate_graphs.py to True to speed up future calls to this script")
+        if USE_CACHED_CURRENT_VALUES: # Read numpy arrays from save
+            try:
+                uu, ii = read_from_npy("I_of_U_results")
+                VOLTAGE_START = uu[0]
 
-    # ----------------------------------------------------------------------------
+                if not HIDE_CACHE_LOG:
+                    print("Using previously saved I(U)-values. Change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to False to calculate new ones instead.")
 
-    """
-    Generate subplots and pass them to render functions
-    """
+            except FileNotFoundError:
+                print("Saved current-values missing. Please change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to False and try again.")
+                exit()
 
-    no_ext_volt_fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
-    no_ext_volt_fig.subplots_adjust(hspace=1.5)
+        else: # Calculate numpy arrays to plot
+            
+            # Additional imports
+            from modell import calculate_current as cc
 
-    render_rho(plt_rho, xx, rho_values)
-    render_E(plt_E, xx, E_values)
-    render_phi(plt_phi, xx, phi_values)
-    render_W(plt_W, xx, W_v_values)
+            # Setup
+            VOLTAGE_START = 0
+            uu_list = [VOLTAGE_START]
+            ii_list = [0]
 
-    # ----------------------------------------------------------------------------
+            # Calculate new values until |ii|*ampere >= |THRESHOLD|*ampere
+            while ii_list[-1] < THRESHOLD:
+                ii_list.append(cc(parameter, uu_list[-1]))
+                uu_list.append(uu_list[-1]+0.01)
 
-    """
-    Plot current over voltage
-    """
-    VOLTAGE_START = 0
-    if PLOT_CURRENT:
-        from modell import calculate_current as cc
-        uu = [VOLTAGE_START]
-        ii = [0]
-        while ii[-1] < THRESHOLD:
-            ii.append(cc(parameter, uu[-1]))
-            uu.append(uu[-1]+0.01)
-        ii.pop(0)
-        uu.pop(-1)
+            # Fix value shift
+            uu_list.pop(-1)
+            ii_list.pop(0)
 
+            # Generate numpy arrays
+            uu = array(uu_list)
+            ii = array(ii_list)
+
+            # Save numpy arrays to file
+            save_to_npy("I_of_U_results", uu, ii)
+            
+            if not HIDE_CACHE_LOG:
+                print("I(U) Values saved. You may now change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to True to speed up future calls to this script")
+
+        # Generate new axes in seperate figure and call render_current()
         plt.figure()
         axes = plt.gca()
 
-        # Plot data and set axes title
-        line = axes.plot(uu, ii, label="Simulation")
-        axes.set_title("Strom-Spannungs-Kennlinie", loc="center")
+        render_current(axes, uu, ii)
 
-        # Center x, y axis, hide additional ones, add arrow tips
-        axes.spines[["left", "bottom"]].set_position(("data", 0))
-        axes.spines[["top", "right"]].set_visible(False)
-        axes.plot(1, 0, ">k", transform=axes.get_yaxis_transform(), clip_on=False)
-        axes.plot(0, 1, "^k", transform=axes.get_xaxis_transform(), clip_on=False)
+# ----------------------------------------------------------------------------
 
-        # Adjust axis length and labels
-        axes.set_xlabel("$U\\ in\\ V$")
-        axes.set_ylabel("$I\\ in\\ A$", rotation=0)
-        # axes.set_ylim(top=max(abs(y)) * 1.1)
-        axes.xaxis.set_label_coords(1.07, 0, transform=axes.get_yaxis_transform())
-        axes.yaxis.set_label_coords(0, 1.025, transform=axes.get_xaxis_transform())
-
-    # ----------------------------------------------------------------------------
-
-        """
-        Piecewise linear interpolation of simulation result
-        """
-        first_above = uu[-1]
-        last_below = round(0.05 * (first_above//0.05), 2)
-        UU = interp(first_above, array(uu).astype(float), array(ii).astype(float))
-        axes.plot([VOLTAGE_START, last_below, first_above], [0, 0, UU], label="Interpolation")
-        axes.legend(loc="lower left")
-        xticks = [round(tick, 2) for tick in axes.get_xticks()]
-        xticklabels = [str(tick) for tick in xticks]
-        if last_below not in xticks:
-            xticks.append(last_below)
-            xticklabels.append("$U_F$")
-        else:
-            index = xticks.index(last_below)
-            xticklabels[index] = f"$U_F$ = {last_below}V"
-        axes.set_xticks(xticks, xticklabels)
-
-
-    """
-    Show figure
-    """
-
+    # Show figure(s)
     plt.show()

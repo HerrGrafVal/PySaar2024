@@ -96,7 +96,7 @@ x_p = Sym("x_p", "Grenze p-Raumladungszone", nanometer)
 w_n = Sym("w_n", "Weite n-Bahngebiet", nanometer)
 x_n = Sym("x_n", "Grenze n-Raumladungszone", nanometer)
 
-WIDTH = Sym("w_n / x_n", "Verhältnis: Weite der Bahngebiete : Ausdehnung der RLZ", 1)
+WIDTH = Sym("w_n / x_n", "Verhältnis: (Weite der Bahngebiete) / (Ausdehnung der RLZ ohne externe Spannung)", 1)
 
 U_ext = Sym("U_{ext}", "Extern angelegte Spannung", volt)
 

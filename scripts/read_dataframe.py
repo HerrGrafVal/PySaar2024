@@ -15,7 +15,7 @@ default_parameter = {
 
 ELEMENT = "Si"
 
-def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursive_call=False):
+def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursive_call=False, eV = False):
     """
     Returns `sympy.expression` instance with all possible parameters substituted for their values
 
@@ -33,6 +33,9 @@ def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursi
             s = konst.Symbol
             v = konst.Koeffizient * (10 ** konst.Ordnung)
             u = konst.Einheit
+
+            # Keep output in electron volts
+            if eV: u = 1
 
             if u == electron_volt and not recursive_call:
                 v = v * fill_values(q_e, recursive_call = True)

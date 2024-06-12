@@ -1,5 +1,5 @@
 from initial_values import values
-from functools import cache
+# from functools import cache
 from symbols import *
 
 default_parameter = {
@@ -16,7 +16,10 @@ default_parameter = {
 
 ELEMENT = "Si"
 
-@cache
+# Caching the following function is a good idea. The following implementation only works once
+# parameter (dict) is removed from fill_values arguments. As parameter was used for testing purposes
+# removing it is planned for the near future.
+# @cache
 def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursive_call=False, eV = False):
     """
     Returns `sympy.expression` instance with all possible parameters substituted for their values

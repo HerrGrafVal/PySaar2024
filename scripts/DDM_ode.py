@@ -1,140 +1,34 @@
-from functools import cache
-from mpmath import mp, exp, log, findroot
+import numpy as np
+import mpmath as mp
 from scipy.integrate import solve_ivp
+from functools import cache
+from cache import pickle_read
 from read_dataframe import fill_values
 from symbols import h, q_e, k, m_e, eps, W_g, N_v, N_c, m_ec, m_hc, T, U_D, N_d, N_a, x_p0, x_n0
 
 # ----------------------------------------------------------------------------
 
-def Fermi_Dirac_Distribution(W, W_F):
-    """
-    Returns the probability P to find an electron at energy level W if W_F is the Fermi level
-    Note that 1 - P is the probability not to find and electron = to find a hole at W
-
-    Parameters
-    : **W** *(mpf)* Energy level of electron
-    : **W_F** *(mpf)* Fermi level
-    """
-
-    P = 1 / (1 + exp((W - W_F) / kT))
-    return P
-
-
-@cache
-def Fermi(W_F, N_a=0, N_d=0):
-    """
-    Charge neutrality in thermodynamic equilibrium requires pos = neg, see page 114
-    By calculating pos and neg for a given W_F this function checks if above requirement is satisfied.
-    Returns pos - neg (Usually around +- e 24) Therefore findroot later has a tolerance of only 0.1
-    If pos - neg == 0 then W_F is the Fermi level
-
-    Parameters
-    : **W_F** *(mpf)* Energy level to check
-    : **N_a** *(float)* level of p-dotation
-    : **N_d** *(float)* level of n-dotation
-    """
-
-    pos = N_c * Fermi_Dirac_Distribution(W_c, W_F) + N_a * Fermi_Dirac_Distribution(W_a, W_F)
-    neg = N_v * (1 - Fermi_Dirac_Distribution(W_v, W_F)) + N_d * (1 - Fermi_Dirac_Distribution(W_d, W_F))
-    return pos - neg
-
-
-def Fermi_p(W_F):
-    """
-    Calls Fermi() for W_F and dotation matching the p-region of the diode.
-    Passes along return value of Fermi()
-
-    Parameters:
-    **W_F** *(mpf)* Energy level to check
-    """
-
-    return(Fermi(W_F, N_a=N_a))
-
-
-def Fermi_n(W_F):
-    """
-    Calls Fermi() for W_F and dotation matching the n-region of the diode.
-    Passes along return value of Fermi()
-
-    Parameters:
-    **W_F** *(mpf)* Energy level to check
-    """
-
-    return(Fermi(W_F, N_d=N_d))
-
-
-def approximate_Fermi_level():
-    """
-    Returns approximated Fermi level height over the valence band (divided by 1 electron volt)
-    In thermodynamic equilibrium the Fermi level is constant over space.
-    The Fermi level for the n-dotated and p-dotated must therefore equal one another.
-    To validate results we approximate both areas seperately, compare them and take the average.
-
-    mpmath dps must be set high enough before a call to this function!
-    Tested only with mp.dps >= 22
-    """
-
-    # Find starting point for p-region
-    i = 1
-    for h in range(15):
-        step = 10 ** -h
-        while Fermi_p(W_A * i) <= 0:
-            i += step
-        i -= step
-    W_start = W_A * i
-
-    # Improve approximation numerically
-    W_F1 = findroot(Fermi_p, W_start, tol=0.1)
-
-    # Find starting point for n-region
-    i = 1
-    for h in range(15):
-        step = 10 ** -h
-        while Fermi_n(W_A * i) <= 0:
-            i += step
-        i -= step
-    W_start = W_A * i
-
-    # Improve approximation numerically
-    W_F2 = findroot(Fermi_n, W_start, tol=0.1)
-
-    # Adjust for lower valence band in n-region
-    W_F2 -= U_D
-
-    # Validate results
-    if abs(W_F1 - W_F2) > 0.05:
-        raise ValueError("Calculated Fermi levels for left and right diode half don't match! Check input parameters and try again.")
-
-    # Average results
-    W_F = (W_F1 + W_F2) / 2
-
-    return(W_F)
-
-# ----------------------------------------------------------------------------
-
 """
-Prepare variables of type float/mpf
+Prepare variables of type float
 """
 
-h = fill_values(h).evalf()
-e = fill_values(q_e).evalf()
-k = fill_values(k).evalf() / e
-m_e = fill_values(m_e).evalf()
-eps = fill_values(eps).evalf()
-W_g = fill_values(W_g, eV=True).evalf()
-N_v = fill_values(N_v).evalf()
-N_c = fill_values(N_c).evalf()
-m_ec = fill_values(m_ec).evalf()
-m_hc = fill_values(m_hc).evalf()
-T = fill_values(T).evalf()
-U_D = fill_values(U_D).evalf()
-N_d = fill_values(N_d).evalf()
-N_a = fill_values(N_a).evalf()
-N_dp = N_d
-N_am = N_a
-kT = k * T
-x_start = fill_values(x_p0).evalf()
-x_finish = fill_values(x_n0).evalf()
+e = float(fill_values(q_e)) # In J
+k = float(fill_values(k)) / e # In eV/K
+T = float(fill_values(T)) # In K
+kT = k * T # In eV
+U_D = float(fill_values(U_D)) # In V
+eps = float(fill_values(eps)) # In C/Vm
+
+W_g = float(fill_values(W_g, eV=True)) # In eV
+
+# In m^-3
+N_v = float(fill_values(N_v))
+N_c = float(fill_values(N_c))
+N_dp = float(fill_values(N_d)) # Assume ionisation of all dotation atoms 
+N_am = float(fill_values(N_a)) # Assume ionisation of all dotation atoms
+
+x_start = float(fill_values(x_p0))
+x_finish = float(fill_values(x_n0))
 
 # ----------------------------------------------------------------------------
 
@@ -144,45 +38,36 @@ Define band structure
 
 W_v = 0
 W_c = W_g
-
-# page 106 - 107, W in electron volts
-W_ion_D = ((m_ec * m_e) * (e ** 3)) / (8 * ((eps * h) ** 2))
-W_ion_A = ((m_hc * m_e) * (e ** 3)) / (8 * ((eps * h) ** 2))
-W_D = W_c - W_ion_D
-W_A = W_v + W_ion_A
-W_d = W_D - kT * log(2)
-W_a = W_A + kT * log(2)
-
-# Allow for higher numeric precision
-mp.dps = 22
-W_F = approximate_Fermi_level()
-
-print(W_F)
+try:
+    W_F = pickle_read("Fermi_level") # In eV
+except FileNotFoundError:
+    print("Fermi_level.pkl not found in SAVE_FOLDER. Execute fermi_level.py and try again.")
 
 # ----------------------------------------------------------------------------
 
 """
 Setup for ode solver
 
-     z0 = phi
-z  = z1 = E
+     z0 = phi       In V
+z  = z1 = E         In V/m
      
 rho = DDM(z0)[4]
 
-dz     z0. = -z1
-dx = z1. = 1/eps * rho
+dz   z0. = -z1
+dx = z1. = rho/eps
 """
 
-z0 = [0, 0]
+z_start = [0, 0] # phi(x_p), E(x_p)
+z_finish = [U_D, 0] # phi(x_n), E(x_n)
 
 @cache
 def DDM(phi, N_am=0, N_dp=0):
-    W_v = -e * phi
-    W_c = W_v + W_g
-    p = N_v * exp(- (W_F - W_v) / (kT))
-    n = N_c * exp(- (W_c - W_F) / (kT))
+    W_v = -phi # In eV, = -e * phi / {e}
+    W_c = W_v + W_g # In eV
+    p = N_v * mp.exp((- (W_F - W_v) / (kT)))
+    n = N_c * mp.exp((- (W_c - W_F) / (kT)))
     rho = e * (p + N_dp - n - N_am)
-    out = [W_v, W_c, p, n, rho]
+    out = [W_v, W_c, float(p), float(n), float(rho)]
     return out
 
 @cache
@@ -194,13 +79,114 @@ def DDM_n(phi):
     return DDM(phi, N_dp=N_dp)
 
 def fun_p(x, z):
-    rho = DDM_p(z[0])[4]
-    dzdx = [-z[1], 1 / eps * rho]
+    phi = z[0] # In eV
+    E = z[1] # In V/m
+    rho = DDM_p(phi)[4]
+    dzdx = [-E, rho / eps]
     return dzdx
 
 def fun_n(x, z):
-    rho = DDM_n(z[0])[4]
-    dzdx = [-z[1], 1 / eps * rho]
+    phi = z[0] # In eV
+    E = z[1] # In V/m
+    rho = DDM_n(phi)[4]
+    dzdx = [-E, rho / eps]
     return dzdx
 
-# ToDo solve ivp
+# ----------------------------------------------------------------------------
+
+STEPS = 100
+
+stepsize = (x_finish - x_start) / STEPS
+
+x_span_p = np.arange(x_start, 0, stepsize)
+x_span_n = np.arange(x_finish, 0, -1 * stepsize)
+
+sol_p = solve_ivp(fun_p, [x_start, 0], z_start, t_eval = x_span_p, dense_output=True)
+sol_n = solve_ivp(fun_n, [x_finish, 0], z_finish, t_eval = x_span_n, dense_output=True)
+
+
+# Multiply with -1 due to ODE definition
+
+"""
+xx_p = x_span_p
+zz_p = sol_p.sol(x_span_p) * -1
+xx_n = np.flip(x_span_n)
+zz_n = np.flip(sol_n.sol(x_span_n), 1) * -1
+"""
+xx_p = sol_p.t
+zz_p = sol_p.y * -1
+xx_n = np.flip(sol_n.t)
+zz_n = np.flip(sol_n.y, 1) * -1
+"""
+
+# ----------------------------------------------------------------------------
+
+# p-region
+phi_p = []
+E_p = []
+W_v_p = []
+W_c_p = []
+p_p = []
+n_p = []
+rho_p = []
+
+for i in range(len(xx_p)):
+    z = zz_p[:,i]
+    phi_p.append(z[0])
+    E_p.append(z[1])
+    ddm = DDM_p(z[0])
+    W_v_p.append(ddm[0])
+    W_c_p.append(ddm[1])
+    p_p.append(ddm[2])
+    n_p.append(ddm[3])
+    rho_p.append(ddm[4])
+"""
+phi_p = np.array(phi).astype(float)
+E_p = np.array(E).astype(float)
+W_v_p = np.array(W_v).astype(float)
+W_c_p = np.array(W_c).astype(float)
+p_p = np.array(p).astype(float)
+n_p = np.array(n).astype(float)
+rho_p = np.array(rho_p).astype(float)
+"""
+# ----------------------------------------------------------------------------
+
+# n-region
+phi_n = []
+E_n = []
+W_v_n = []
+W_c_n = []
+p_n = []
+n_n = []
+rho_n = []
+
+for i in range(len(xx_n)):
+    z = zz_n[:,i]
+    z[0] += 2 * U_D # Same as the *-1 above
+    phi_n.append(z[0])
+    E_n.append(z[1])
+    ddm = DDM_n(z[0])
+    W_v_n.append(ddm[0])
+    W_c_n.append(ddm[1])
+    p_n.append(ddm[2])
+    n_n.append(ddm[3])
+    rho_n.append(ddm[4])
+
+"""
+phi_n = np.array(phi).astype(float)
+E_n = np.array(E).astype(float)
+W_v_n = np.array(W_v).astype(float)
+W_c_n = np.array(W_c).astype(float)
+p_n = np.array(p).astype(float)
+n_n = np.array(n).astype(float)
+rho_n = np.array(rho_n).astype(float)
+"""
+# ----------------------------------------------------------------------------
+
+
+
+"""
+ToDo:
+Try mpmath odefun() to solve ode
+Scipy solve_ivp: Add interpolation for p-r gap
+"""

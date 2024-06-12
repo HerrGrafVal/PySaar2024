@@ -1,9 +1,10 @@
 from initial_values import values
+from functools import cache
 from symbols import *
 
 default_parameter = {
     N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
-    N_d: 5 * (10 ** 17) * (centimeter ** -3),
+    N_d: 2.25 * (10 ** 18) * (centimeter ** -3),
     T: 300 * kelvin,
     W_t : 0.5 * W_g,
     U_ext : 0 * volt,
@@ -15,6 +16,7 @@ default_parameter = {
 
 ELEMENT = "Si"
 
+@cache
 def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursive_call=False, eV = False):
     """
     Returns `sympy.expression` instance with all possible parameters substituted for their values

@@ -1,6 +1,7 @@
 from sympy import sympify
 from symbols import *
 from numpy import array, save, load
+import pickle
 
 SAVE_FOLDER = "../simulation_results/"
 
@@ -76,5 +77,29 @@ def check_savefoler():
         return
     else:
         os.mkdir(SAVE_FOLDER)
+
+def pickle_save(obj, filename):
+    """
+    Saves `obj` to `simulation_results/filename`
+
+    Parameters
+    : **obj** *(object)* to pickle
+    : **filename** *(string)* Filename (without data type suffix) to write to
+    """
+
+    with open(SAVE_FOLDER + filename + ".pkl", "wb") as file:
+        pickle.dump(obj, file)
+
+def pickle_read(filename):
+    """
+    Returns object saved at `simulation_results/filename`
+
+    Parameters
+    : **filename** *(string)* Filename (without data type suffix) to read from, must be .pkl
+    """
+
+    with open(SAVE_FOLDER + filename + ".pkl", "rb") as file:
+        obj = pickle.load(file)
+    return obj
 
 check_savefoler()

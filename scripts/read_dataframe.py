@@ -4,7 +4,7 @@ from symbols import *
 
 default_parameter = {
     N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
-    N_d: 2.25 * (10 ** 18) * (centimeter ** -3),
+    N_d: 5 * (10 ** 17) * (centimeter ** -3),
     T: 300 * kelvin,
     W_t : 0.5 * W_g,
     U_ext : 0 * volt,

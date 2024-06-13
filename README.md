@@ -7,8 +7,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] Literaturgrundlage[^1] in Repository speichern
 - [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
 - [x] DDM Bestimmungsgleichungen[^2] mit [SymPy](https://docs.sympy.org/latest/index.html) implementieren
-- [x] DDM Numerisch lösen. Eventuell [mpmath](https://mpmath.org/) verwenden
-- [x] [PyLaTeX](https://jeltef.github.io/PyLaTeX/current/index.html) implementieren um DataFrames und später Tabellen in pdf Form auszugeben
+- [x] DDM[^3] Numerisch lösen. [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [mpmath](https://mpmath.org/) verwenden
+- [x] [PyLaTeX](https://jeltef.github.io/PyLaTeX/current/index.html) implementieren um Tabellen und plots in pdf auszugeben
 ### p-n-Übergang im thermodynamischen Gleichgewicht - Symbolisch
 - [x] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
     1. [x] *Wichtige Größen* als solche bestimmen
@@ -22,18 +22,50 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     2. [x] Darstellung in Achsendiagrammen, Bändermodell
 - [x] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
 - [x] Visualisierung des p-n-Übergangs implementieren
-- [ ] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
+- [x] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
 ### p-n-Übergang außerhalb des thermodynamischen Gleichgewichts
 - [x] Externe Spannung und Stromfluss durch Diode implementieren
 - [x] Kennlinie visualiseren
 - [x] Kennlinie mit stückweiser linearer Regression approximieren
 - [x] Flussspannung aus Regressionsergebnis ermitteln
+### Output
+- [ ] pdf Struktur erarbeiten
+- [ ] `main.py` anlegen:
+    1. [ ] Frage nach Parametern
+    2. [ ] Aufruf aller Skripte
+    3. [ ] Gesamt pdf generieren
+    4. [ ] pdf öffnen
 ### Dokumentation
 - [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
 - [ ] Docs korrigieren
+- [ ] Docs erweitern:
+    1. [ ] Anleitung zu parameter.json (Farbkodierung)
+    2. [ ] *"Wie weitermachen?"* zu allen Skripten
+    3. [ ] Step-by-Step Anleitung zu Simulation mit einzelnen Skripten
+- [ ] OneDrive pptx verlinken
 ### Präsentation
 - [ ] Folien vorbereiten
 - [ ] Präsentation in vorgegebener Zeit proben
 
 [^1]: Skriptum zur Vorlesung **Physikalische Grundlagen elektronischer Bauelemente** WS 2022/23, Prof. Dr.-Ing. Michael Möller
-[^2]: Verzicht auf Rechteck Näherung intensiv erprobt. Bisher mit sympy nicht realisierbar.
+[^2]: Verzicht auf Rechteck Näherung auch hier intensiv erprobt. Mit sympy nicht realisierbar. 
+[^3]: Ohne Rechteck Näherung der Raumladungsdichte
+
+## Setup & Requirements:
+- Install all the python modules linked above, try executing:
+    `pip install pandas sympy numpy scipy mpmath pylatex matplotlib tikzplotlib sphinx`
+- Make sure previously installed packages are up-to-date:
+    `pip install *package-name* --upgrade`
+- Fix tikzplotlib to run with up-to-date packages:
+    1. Navigate to tikzplotlib installation path
+    2. Open */tikzplotlib/_color.py*
+    3. Change line 32 from `for h, name in webcolors.CSS3_HEX_TO_NAMES.items():` 
+       to `for h, name in webcolors.CSS3_HEX_TO_NAMES.items():`
+- Generate documentation HTML:
+    1. Navigate to */PySaar2024/docs/*
+    2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
+- The HTML documentation contains additional information not present in source code docstrings
+- The HTML documentation contains a step by step on how to perform your own simulation
+- Access documentation HTML:
+    1. Navigate to */PySaar2024/docs/build/html*
+    2. Open *index.html* in browser

@@ -94,6 +94,8 @@ def calculate_I_rg(parameter, U):
     : **U** *(float)* External voltage, needed for calculation of SCR width
     """
 
+    import scipy.integrate as integrate
+
     # Prevent SCR width errors after sufficient external voltage
     if fill_values(U, parameter = parameter) >= fill_values(U_D, parameter = parameter): 
         global x_n, x_p

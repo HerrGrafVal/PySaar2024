@@ -9,11 +9,19 @@ import json
 # Number of digits to display when passing `float` to `create_data_frame_pdf()`
 FLOAT_DIGITS = 3
 
-# Path to find parameters.json - Physically acurate values can be found in *../initial_values/default_parameters.json*
-JSON_PATH = "../initial_values/parameters.json"
+# Relative path to the folder containing json with parameters. Corresponding pdf will be saved here. Must end in "/"
+PARAM_FOLDER = "../initial_values/"
 
-# Path to create Initial Parameters.pdf
-PDF_PATH = "../initial_values/Initial Parameters.pdf"
+# File name for parameters. Must end in ".json"
+# Physically acurate values can be found in *../initial_values/default_parameters.json*
+JSON_FILE_NAME = "parameters.json"
+
+# File name for parameter pdf. Must end in ".pdf"
+PDF_FILE_NAME = "Initial Parameters.pdf"
+
+# Don't change anything here
+JSON_PATH = PARAM_FOLDER + JSON_FILE_NAME
+PDF_PATH = PARAM_FOLDER + PDF_FILE_NAME
 PDF_PATH = PDF_PATH[:-4]
 
 # ----------------------------------------------------------------------------
@@ -205,3 +213,13 @@ if __name__ == "__main__":
         name_list.append(key)
         create_data_frame_tex(values[key], key, typ)
     create_pdf(name_list)
+
+    try:
+        # Open generated pdf file in default application.
+        # Tested on Windows 10 only
+        import os
+        cmd = '"' + PDF_PATH + '.pdf"'
+        os.system(cmd)
+    except:
+        pass
+    print(PDF_FILE_NAME, "generated at", PARAM_FOLDER)

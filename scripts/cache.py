@@ -1,8 +1,10 @@
 from sympy import sympify
 from symbols import *
 from numpy import array, save, load
+from tikzplotlib import save as fig_to_tex
 import pickle
 
+# Relative path to save folder. Must end with "/"!
 SAVE_FOLDER = "../simulation_results/"
 
 def read_from_file(filename, namespace):
@@ -101,5 +103,21 @@ def pickle_read(filename):
     with open(SAVE_FOLDER + filename + ".pkl", "rb") as file:
         obj = pickle.load(file)
     return obj
+
+def plt_to_tex(filename, fig):
+    """
+    This functions remains unused. While TikZ figures are preferred over .png
+    tikzplotlib messes with labels and layout. Reverting those changes is doable,
+    but not feasable after going through the effort in matplotlib.
+    See pdf_plot_test.py in previous git commits (branch: dev)
+    
+    Generates TikZ figure and saves tex at `SAVE_FOLDER/filename`
+
+    Parameters
+    : **filename** *(string)* Filename (without data type suffix) to write to
+    : **fig** *(matplotlib.Figure)* Figure to save as tex
+    """
+
+    fig_to_tex(SAVE_FOLDER + filename + ".tex", figure = fig, strict = True)
 
 check_savefoler()

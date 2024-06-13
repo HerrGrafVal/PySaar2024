@@ -34,6 +34,6 @@ extensions = [
 
 7. Change index.rst, scripts.rst, scripts.symbols.rst
 
-8. Execute `make.bat html`, when using windows try `./make.bat html`
+8. Execute `make.bat html`, when using windows try `.\make.bat html`
 
 9. Open /PySaar2024/docs/build/html/index.html

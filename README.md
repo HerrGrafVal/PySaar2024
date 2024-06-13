@@ -15,14 +15,14 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     2. [x] Darstellung in Achsendiagrammen, Bändermodell
 - [x] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
 - [x] Visualisierung des p-n-Übergangs implementieren
-- [ ] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
+- [ ] Graphiken speichern
 ### p-n-Übergang im thermodynamischen Gleichgewicht - Numerisch
 - [x] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
     1. [x] *Wichtige Größen* als solche bestimmen
     2. [x] Darstellung in Achsendiagrammen, Bändermodell
 - [x] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
 - [x] Visualisierung des p-n-Übergangs implementieren
-- [x] [tikzplotlib](https://pypi.org/project/tikzplotlib/) implementieren und plots zu .tex -> zu .pdf umwandeln
+- [x] Graphiken speichern
 ### p-n-Übergang außerhalb des thermodynamischen Gleichgewichts
 - [x] Externe Spannung und Stromfluss durch Diode implementieren
 - [x] Kennlinie visualiseren
@@ -37,7 +37,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     4. [ ] pdf öffnen
 ### Dokumentation
 - [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
-- [ ] Docs korrigieren
+- [ ] Docstrings korrigieren
 - [ ] Docs erweitern:
     1. [ ] Anleitung zu parameter.json (Farbkodierung)
     2. [ ] *"Wie weitermachen?"* zu allen Skripten
@@ -53,14 +53,9 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 
 ## Setup & Requirements:
 - Install all the python modules linked above, try executing:
-    `pip install pandas sympy numpy scipy mpmath pylatex matplotlib tikzplotlib sphinx`
+    `pip install pandas sympy numpy scipy mpmath pylatex matplotlib sphinx`
 - Make sure previously installed packages are up-to-date:
     `pip install *package-name* --upgrade`
-- Fix tikzplotlib to run with up-to-date packages:
-    1. Navigate to tikzplotlib installation path
-    2. Open */tikzplotlib/_color.py*
-    3. Change line 32 from `for h, name in webcolors.CSS3_HEX_TO_NAMES.items():` 
-       to `for h, name in webcolors.CSS3_HEX_TO_NAMES.items():`
 - Generate documentation HTML:
     1. Navigate to */PySaar2024/docs/*
     2. Execute `make.bat html`, on Windows do `.\make.bat html` instead

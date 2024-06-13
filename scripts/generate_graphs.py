@@ -137,7 +137,7 @@ def render_W(axes, x, y):
 
     # Call render() for W_V, plot W_C, remove y ticks
     render(axes, x, y, "Bandverläufe", label="$W_V$", arrow=False, bottom=True)[0]
-    axes.plot(x, y + fill_values(W_g), color="blue", label="$W_C$")
+    axes.plot(x, y + fill_values(W_g), "C1", label="$W_C$")
     axes.set_yticks([], [])
     # Change y axis length, plot arrow tip for y axis in bottom position
     axes.set_ylim(auto=True)

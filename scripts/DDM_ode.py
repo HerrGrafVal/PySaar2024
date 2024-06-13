@@ -79,6 +79,7 @@ if __name__ == "__main__":
         W_F = pickle_read("Fermi_level")  # In eV
     except FileNotFoundError:
         print("Fermi_level.pkl not found in SAVE_FOLDER. Execute fermi_level.py and try again.")
+        exit()
 
     # ----------------------------------------------------------------------------
 

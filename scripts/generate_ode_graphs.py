@@ -1,6 +1,7 @@
 from cache import pickle_read
 import matplotlib.pyplot as plt
 from matplotlib.ticker import EngFormatter
+from matplotlib.transforms import Bbox
 
 # ----------------------------------------------------------------------------
 
@@ -8,8 +9,6 @@ from matplotlib.ticker import EngFormatter
 SHOW_PLOT = False
 # Whether x-ticks should be numbers or just mark x_p, 0, x_n
 SHOW_X_NUMBERS = False
-# If not SHOW_PLOT, Whether to make seperate figure objects available outside of loop
-KEEP_FIGURES = False
 
 # ----------------------------------------------------------------------------
 
@@ -36,75 +35,179 @@ if __name__ == "__main__":
     n = results["n"]
     rho = results["rho"]
 
+    w_p = results["w_p"]
+    x_p = results["x_p"]
+    x_n = results["x_n"]
+    w_n = results["w_n"]
+
     # ----------------------------------------------------------------------------
 
     """
-	Setup plots
+	Setup for plots
 	"""
 
-    pn = ["cc", "rho", "E", "phi", "W"]
-
     form_x = EngFormatter(unit="$m$")
-    form_cc = EngFormatter(unit="$m^{-3}$")
+    form_cc = EngFormatter()
     form_rho = EngFormatter(unit="$C / m^{-3}$")
     form_E = EngFormatter(unit="$V / m$")
     form_phi = EngFormatter(unit="$V$")
     form_W = EngFormatter(unit="$eV$")
+    
+    pn = ["cc", "rho", "E", "phi", "W"]
 
-    fig, (ax_cc, ax_rho, ax_E, ax_phi, ax_W) = plt.subplots(5, 1)
-    fig.subplots_adjust(hspace=1.5)
-
-    ax_cc.plot(xx, p, "C0", label="$log_{10}$ $p (x)$")
-    ax_cc.plot(xx, n, "C1", label="$log_{10}$ $n (x)$")
-    ax_cc.yaxis.set_major_formatter(form_cc)
-
-    ax_rho.plot(xx_rho, rho, "C0", label="$\\rho (x)$")
-    ax_rho.yaxis.set_major_formatter(form_rho)
-
-    ax_E.plot(xx, E, "C0", label="$E (x)$")
-    ax_E.yaxis.set_major_formatter(form_E)
-
-    ax_phi.plot(xx, phi, "C0", label="$\\varphi (x)$")
-    ax_phi.yaxis.set_major_formatter(form_phi)
-
-    ax_W.plot(xx, W_v, "C0", label="$W_V (x)$")
-    ax_W.plot(xx, W_c, "C1", label="$W_C (x)$")
-    ax_W.plot([xx[0], xx[-1]], [W_F, W_F], "C2", label="$W_F$")
-    ax_W.yaxis.set_major_formatter(form_W)
-
-    for i in pn:
-        axes = eval("ax_" + i)
-        axes.legend()
-
-        if SHOW_X_NUMBERS:
-            axes.xaxis.set_major_formatter(form_x)
-        else:
-            w_p = results["w_p"]
-            x_p = results["x_p"]
-            x_n = results["x_n"]
-            w_n = results["w_n"]
-            axes.set_xticks([w_p, x_p, 0, x_n, w_n], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
+    label = {
+            "rho" : ["$\\rho (x)$", "Raumladungsdichte"],
+            "E" : ["$E (x)$", "Feldstärke"],
+            "phi" : ["$\\varphi (x)$", "Potential"]
+        }
 
     # ----------------------------------------------------------------------------
 
     """
-	Display plots or generate tex
+    Generate single figure with subplot for each graph
+    """
+
+    fig, (ax_cc, ax_rho, ax_E, ax_phi, ax_W) = plt.subplots(5, 1, layout="constrained")
+
+    # Populate subplots
+    for i in pn:
+        ax = eval("ax_" + i)
+
+        # Plot data, set title
+        if i == "cc":
+            ax.plot(xx, p, "C0", label="$log_{10}($ $p (x) \\cdot m^3)$")
+            ax.plot(xx, n, "C1", label="$log_{10}($ $n (x) \\cdot m^3)$")
+            ax.set_title("Ladungsträgerdichten")
+        elif i == "W":
+            ax.plot(xx, W_v, "C0", label="$W_V (x)$")
+            ax.plot(xx, W_c, "C1", label="$W_C (x)$")
+            ax.plot([xx[0], xx[-1]], [W_F, W_F], "C2", label="$W_F$")
+            ax.set_title("Bandverläufe")
+        else:
+            if i == "rho":
+                ax.plot(xx_rho, eval(i), "C0", label=label[i][0])
+            else:
+                ax.plot(xx, eval(i), "C0", label=label[i][0])
+            ax.set_title(label[i][1])
+
+        # Show legend
+        exec("legend_" + i + " = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))", globals())
+
+        # Adjust visible x, y axis
+        ax.spines[["bottom"]].set_position(("data", 0))
+        ax.spines[["top", "right"]].set_visible(False)
+        ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
+        ax.plot(0, 1, "^k", transform=ax.transAxes, clip_on=False)
+
+        # Adjust x, y ticks
+        ax.yaxis.set_major_formatter(eval("form_" + i))
+        if SHOW_X_NUMBERS:
+            ax.xaxis.set_major_formatter(form_x)
+        else:
+            ax.set_xticks([w_p, x_p, 0, x_n, w_n], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
+
+    # Adjust subplot spacing
+    size = fig.get_size_inches()
+    size[0] *= 1.25
+    size[1] *= 1.5
+    w_pad, h_pad, wspace, hspace = fig.get_constrained_layout_pads()
+    h_pad *= 7.5
+    hspace *= 7.5
+    fig.set_size_inches(size)
+    fig.set_constrained_layout_pads(w_pad=w_pad, h_pad=h_pad, wspace=wspace, hspace=hspace)
+
+
+    # ----------------------------------------------------------------------------
+
+    """
+	Display plots or save png
 	"""
 
     if SHOW_PLOT:
-        # Setting titles (calling tikzplotlib with titles causes unicode errors)
-        ax_cc.set_title("Ladungsträgerdichten")
-        ax_rho.set_title("Raumladungsdichte")
-        ax_E.set_title("Feldstärke")
-        ax_phi.set_title("Potential")
-        ax_W.set_title("Bandverläufe")
         plt.show()
-        # plt.savefig("../simulation_results/ODE_plot.png")
 
     else:
         # Additional imports
-        from cache import plt_to_tex
+        from cache import SAVE_FOLDER
 
+        # Save full figure
+        plt.savefig("../simulation_results/DDM_graph.png")
+        plt.close(fig)
+
+        for i in pn:
+            # Create new figures for each graph
+            exec("fig_" + i + ", ax_" + i + " = plt.subplots(1, 1, layout = 'constrained')", globals())
+
+            new_fig = eval("fig_" + i)
+            ax = eval("ax_" + i)
+
+            # Plot data, set title
+            if i == "cc":
+                ax.plot(xx, p, "C0", label="$log_{10}($ $p (x) \\cdot m^3)$")
+                ax.plot(xx, n, "C1", label="$log_{10}($ $n (x) \\cdot m^3)$")
+                ax.set_title("Ladungsträgerdichten")
+            elif i == "W":
+                ax.plot(xx, W_v, "C0", label="$W_V (x)$")
+                ax.plot(xx, W_c, "C1", label="$W_C (x)$")
+                ax.plot([xx[0], xx[-1]], [W_F, W_F], "C2", label="$W_F$")
+                ax.set_title("Bandverläufe")
+            else:
+                if i == "rho":
+                    ax.plot(xx_rho, eval(i), "C0", label=label[i][0])
+                else:
+                    ax.plot(xx, eval(i), "C0", label=label[i][0])
+                ax.set_title(label[i][1])
+
+            # Show legend
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+            # Adjust visible x, y axis
+            ax.spines[["bottom"]].set_position(("data", 0))
+            ax.spines[["top", "right"]].set_visible(False)
+            ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
+            ax.plot(0, 1, "^k", transform=ax.transAxes, clip_on=False)
+
+            # Adjust x, y ticks
+            ax.yaxis.set_major_formatter(eval("form_" + i))
+            if SHOW_X_NUMBERS:
+                ax.xaxis.set_major_formatter(form_x)
+            else:
+                ax.set_xticks([w_p, x_p, 0, x_n, w_n], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
+
+            # Adjust figure aspect ratio
+            size = new_fig.get_size_inches()
+            size[0] *= 1.75 # Width
+            size[1] *= 0.4 # Height
+            new_fig.set_size_inches(size)
+
+            # Save single graph figure
+            plt.savefig(SAVE_FOLDER + i + "_graph.png", bbox_inches = "tight")
+
+            # Close figure
+            plt.close(new_fig)
+
+
+        """
+        Attempt to save individual subplots from single figure
+        Problem: Title from adjacent graphs clips into saved images
+
+        for i in pn:
+            axes = eval("ax_" + i)
+            items = axes.get_xticklabels() + axes.get_yticklabels()
+            items += [axes, axes.title, eval("legend_" + i)]
+            bbox = Bbox.union([item.get_window_extent() for item in items])
+            extent = bbox.expanded(1.05, 1.1).transformed(fig.dpi_scale_trans.inverted())
+            plt.savefig("../simulation_results/" + i + "_graph.png", bbox_inches=extent)
+		"""
+        
+
+        """
+        Attempt to move existing axes to seperate figures
+        Problem: Cannot control aspect ratio in new figure
+        
+        # If not SHOW_PLOT, Whether to make seperate figure objects available outside of loop
+        KEEP_FIGURES = False
+        
         # Move all plots to their own figure
         for i in pn:
             if KEEP_FIGURES:
@@ -120,8 +223,6 @@ if __name__ == "__main__":
             dummy_ax = new_fig.add_subplot(111)
             ax.set_position(dummy_ax.get_position())
             dummy_ax.remove()
-
-            plt_to_tex(i + "_graph", new_fig)
-
         plt.close(fig)
         plt.show()
+        """

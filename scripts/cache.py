@@ -1,7 +1,7 @@
 from sympy import sympify
 from symbols import *
 from numpy import array, save, load
-from tikzplotlib import save as fig_to_tex
+# from tikzplotlib import save as fig_to_tex
 import pickle
 
 # Relative path to save folder. Must end with "/"!
@@ -110,7 +110,10 @@ def plt_to_tex(filename, fig):
     tikzplotlib messes with labels and layout. Reverting those changes is doable,
     but not feasable after going through the effort in matplotlib.
     See pdf_plot_test.py in previous git commits (branch: dev)
-    
+    See README in said commit on how to hotfix tikzplotlib
+
+    Reenable import in line 4 to make this functional
+
     Generates TikZ figure and saves tex at `SAVE_FOLDER/filename`
 
     Parameters

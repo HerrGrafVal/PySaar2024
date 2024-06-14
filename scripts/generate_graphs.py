@@ -2,26 +2,15 @@ from symbols import *
 from read_dataframe import fill_values
 from cache import read_from_file, save_to_npy, read_from_npy
 from sympy import lambdify
-from numpy import linspace, interp, array
+from numpy import linspace, interp, array, float64
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch as Arrow
 # from matplotlib.ticker import EngFormatter as Form
 
 # ----------------------------------------------------------------------------
 
-parameter = {
-    N_a: 2.25 * (10 ** 17) * (centimeter ** -3),
-    N_d: 5 * (10 ** 17) * (centimeter ** -3),
-    T: 300 * kelvin,
-    U_ext : 0 * volt,
-    A : 19.625 * (milimeter ** 2),
-    "N-Dotation" : "As",
-    "P-Dotation" : "B",
-    WIDTH : 3
-}
-
-USE_CACHED_PN_VALUES = True
-USE_CACHED_CURRENT_VALUES = True
+USE_CACHED_PN_VALUES = False
+USE_CACHED_CURRENT_VALUES = False
 HIDE_CACHE_LOG = False
 PLOT_PN = True
 PLOT_CURRENT = True
@@ -94,7 +83,6 @@ def render(axes, x, y, title, **kwargs):
 
     # Return line object drawn in axes
     return line
-
 
 def render_rho(axes, x, y):
     """
@@ -211,8 +199,8 @@ if __name__ == "__main__":
                 if not HIDE_CACHE_LOG:
                     print("Using previously saved pn-values. Change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False to calculate new ones instead.")
 
-                x_p = float(fill_values(x_p, parameter=parameter))
-                x_n = float(fill_values(x_n, parameter=parameter))
+                x_p = float(fill_values(x_p))
+                x_n = float(fill_values(x_n))
 
             except FileNotFoundError:
                 print("Saved pn-values missing. Please change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False and try again.")
@@ -230,15 +218,15 @@ if __name__ == "__main__":
                 exit()
 
             # Calculate relevant x vector
-            x_p = float(fill_values(x_p, parameter=parameter))
-            x_n = float(fill_values(x_n, parameter=parameter))
-            w_p = float(fill_values(w_p, parameter = parameter))
-            w_n = float(fill_values(w_n, parameter = parameter))
+            x_p = float(fill_values(x_p))
+            x_n = float(fill_values(x_n))
+            w_p = float(fill_values(w_p))
+            w_n = float(fill_values(w_n))
             xx = linspace(-1 * w_p, w_n, 1000)
 
             # Lambdify all functions in func_names
             for i in func_names:
-                exec(i + "_func = lambdify(x, fill_values(" + i + ", parameter = parameter))", globals())
+                exec(i + "_func = lambdify(x, fill_values(" + i + "))", globals())
 
             # Call lambdified function to create numpy arrays
             rho_values = rho_func(xx)
@@ -265,6 +253,7 @@ if __name__ == "__main__":
         render_E(plt_E, xx, E_values)
         render_phi(plt_phi, xx, phi_values)
         render_W(plt_W, xx, W_v_values)
+
 
 # ----------------------------------------------------------------------------
 
@@ -294,7 +283,7 @@ if __name__ == "__main__":
 
             # Calculate new values until |ii|*ampere >= |THRESHOLD|*ampere
             while ii_list[-1] < THRESHOLD:
-                ii_list.append(cc(parameter, uu_list[-1]))
+                ii_list.append(cc(uu_list[-1]))
                 uu_list.append(uu_list[-1]+0.01)
 
             # Fix value shift

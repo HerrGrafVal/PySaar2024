@@ -26,39 +26,36 @@ PN = [ONE, TWO, THREE, FOUR]
 
 # ----------------------------------------------------------------------------
 
-def calculate_current(parameter, U):
+def calculate_current(U):
     """
     Returns current/ampere (float) based on parameter
     Currently ignores I_rg, see calculate_I_rg() documentation!
 
     Parameter
-    : **parameter** *(dict)* Must be in form of read_dataframe.default_parameter
     : **U** *(float)* External voltage
     """
-
     if U in [0, 0 * volt]:
         return 0
 
-    I_s = calculate_I_s(parameter, U)
-    I_rg = calculate_I_rg(parameter, U)
+    I_s = calculate_I_s(U)
+    I_rg = calculate_I_rg(U)
     I = I_s * (exp(U / U_T) - 1) + I_rg
-    current = fill_values(I, parameter = parameter).evalf()
+    current = fill_values(I)
 
     return current
 
-def calculate_I_s(parameter, U):
+def calculate_I_s(U):
     """
-    Returns saturation current/ampere (float) based on parameter
+    Returns saturation current/ampere (float) based on U
 
     Parameter
-    : **parameter** *(dict)* Must be in form of read_dataframe.default_parameter
     : **U** *(float)* External voltage, needed for calculation of SCR width
     """
 
     if U in [0, 0 * volt]:
         return 0
 
-    parameter[U_ext] = U
+    parameter = {U_ext : U * volt}
 
     # Prevent SCR width errors after sufficient external voltage
     if fill_values(U * volt) >= fill_values(U_D, parameter = parameter): 
@@ -69,9 +66,9 @@ def calculate_I_s(parameter, U):
         # Diode current
         I_s = q_e * A * (ONE.np0 * D_n / L_n * coth((w_p + x_p) / L_n) + FOUR.pn0 * D_p / L_p * coth((w_n - x_n) / L_p))
 
-    return fill_values(I_s, parameter = parameter).evalf()
+    return fill_values(I_s, parameter = parameter)
 
-def calculate_I_rg(parameter, U):
+def calculate_I_rg(U):
     """
                                 / \
                                / | \
@@ -90,14 +87,13 @@ def calculate_I_rg(parameter, U):
     Returns I_rg current/ampere (float) based on parameter
 
     Parameter
-    : **parameter** *(dict)* Must be in form of read_dataframe.default_parameter
     : **U** *(float)* External voltage, needed for calculation of SCR width
     """
 
     import scipy.integrate as integrate
 
     # Prevent SCR width errors after sufficient external voltage
-    if fill_values(U, parameter = parameter) >= fill_values(U_D, parameter = parameter): 
+    if U >= fill_values(U_D): 
         global x_n, x_p
         x_n = 0 * meter
         x_p = 0 * meter
@@ -115,8 +111,8 @@ def calculate_I_rg(parameter, U):
         # Setup integration interval
         a = 0
         b = 0
-        if area == TWO: a = float(fill_values(x_p, parameter = parameter))
-        if area == THREE: b = float(fill_values(x_n, parameter = parameter))
+        if area == TWO: a = float(fill_values(x_p))
+        if area == THREE: b = float(fill_values(x_n))
 
         # Define n1, p1
         n1 = N_c * exp(-(W_c - W_t)/k*T)
@@ -126,14 +122,14 @@ def calculate_I_rg(parameter, U):
         R = (p * n - n_i**2) / ((p1 + p) * tau_n + (n1 + n) * tau_p)
 
         # Lambdify equation after substituting in values
-        R_func = lambdify(x, fill_values(R, parameter = parameter), cse = True)
+        R_func = lambdify(x, fill_values(R), cse = True)
 
         # Approximate integral numerically
         R_over_SCR += integrate.quad(R_func, a, b)[0]
     
     # Calculate and return I_rg
     I_rg = q_e * A * R_over_SCR
-    return fill_values(I_rg, parameter = parameter).evalf()
+    return fill_values(I_rg)
 
 # ----------------------------------------------------------------------------
 

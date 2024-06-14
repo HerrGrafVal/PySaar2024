@@ -6,7 +6,7 @@ from matplotlib.transforms import Bbox
 # ----------------------------------------------------------------------------
 
 # Whether to show results in matplotlib or generate tex
-SHOW_PLOT = False
+SHOW_PLOT = True
 # Whether x-ticks should be numbers or just mark x_p, 0, x_n
 SHOW_X_NUMBERS = False
 

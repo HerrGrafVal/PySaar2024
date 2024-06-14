@@ -1,4 +1,13 @@
 {
+	"Diode" : {
+		"Donator Dotierungsdichte" : [5, 17],
+		"Donator Atomsorte" : "As",
+		"Akzeptor Dotierungsdichte" : [2.5, 17],
+		"Akzeptor Atomsorte" : "B",
+		"Trap Energieniveaus (Halbleiter Verunreinigung)" : [0.5, 0],
+		"Querschnittsfläche der Diode" : [19.625, 0],
+		"Temperatur" : [300, 0]
+	},
 	"Materialparameter & Naturkonstanten" : {
 		"Format" : ["Koeffizient", "*10^x"],
 		"Einheit" : "Siehe scripts/symbols.py",

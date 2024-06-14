@@ -100,7 +100,7 @@ WIDTH = Sym("w_n / x_n", "Verhältnis: (Weite der Bahngebiete) / (Ausdehnung der
 
 U_ext = Sym("U_{ext}", "Extern angelegte Spannung", volt)
 
-W_t = Sym("W_t", "Trap Energieniveaus (Halbleiter Verunreinigung)", electron_volt)
+W_t = Sym("W_t", "Trap Energieniveaus (Halbleiter Verunreinigung)", W_g)
 
 tau_n = Sym("\\tau_n", "Mittlere Lebensdauer der Elektronen als Minoritätsträger", second)
 tau_p = Sym("\\tau_p", "Mittlere Lebensdauer der Löcher als Minoritätsträger", second)
@@ -118,6 +118,8 @@ N_a = Sym("N_A", "Akzeptor Dotierungsdichte", centimeter**(-3))
 N_am = Sym("N_A^-", "Dichte ionisierter Akzeptorniveaus", centimeter**(-3))
 N_d = Sym("N_D", "Donator Dotierungsdichte", centimeter**(-3))
 N_dp = Sym("N_D^+", "Dichte ionisierter Donatorniveaus", centimeter**(-3))
+
+diode = [N_d, N_a, W_t, A, T]
 
 n0 = Function("n_0")(x)
 del_n = Function("\\Delta n")(x)

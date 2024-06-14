@@ -1,5 +1,6 @@
 from symbols import material_parameters as m_keys
 from symbols import constants as c_keys
+from symbols import diode as d_keys
 from symbols import second
 from pandas import DataFrame
 import json
@@ -32,7 +33,7 @@ def build_data_frame(name, var=0):
 
     Parameters
     : **name** *(string)* Key to dictionary from *JSON_PATH*
-    : **var** *(int)* 0 to define material parameters, 1 to define universal constants, 2 for tau, 3 for mu
+    : **var** *(int)* 0 to define material parameters, 1 to define universal constants, 2 for tau, 3 for mu, 4 for diode parameters
     """
 
     if var == 2:
@@ -59,6 +60,17 @@ def build_data_frame(name, var=0):
             for i in range(len(magnitudes)):
                 shift[i] = magnitudes[i]
             df.rename(index = shift, inplace = True)
+
+    elif var == 4:
+        # Diode
+        content = parameters[name]
+        df = DataFrame({"Symbol": [], "Koeffizient": [],
+                        "Ordnung": [], "Einheit": []})
+        for i in d_keys:
+            df.loc[i.desc] = [i, *content[i.desc], i.unit]
+        df.loc["Donator Atomsorte"] = [content["Donator Atomsorte"], 0,0,0]
+        df.loc["Akzeptor Atomsorte"] = [content["Akzeptor Atomsorte"], 0,0,0]
+        df.columns.name = name
 
     else:
         # Materialparameter & Naturkonstanten
@@ -181,9 +193,13 @@ for material parameters and universal constants as defined
 in `symbols.py` and `JSON_PATH`
 """
 
-with open(JSON_PATH, "r", encoding="utf8") as file:
-    parameters = json.load(file)
-parameters.pop("Materialparameter & Naturkonstanten")
+try:
+    with open(JSON_PATH, "r", encoding="utf8") as file:
+        parameters = json.load(file)
+    parameters.pop("Materialparameter & Naturkonstanten")
+except FileNotFoundError:
+    print("No proper file found at", JSON_PATH)
+    exit()
 
 values = {}
 
@@ -195,6 +211,8 @@ for key in parameters.keys():
         typ = 2
     elif key == "Beweglichkeiten von Majoritätsträgern":
         typ = 3
+    elif key == "Diode":
+        typ = 4
     values[key] = build_data_frame(key, typ)
 
 # ----------------------------------------------------------------------------
@@ -210,7 +228,8 @@ if __name__ == "__main__":
             typ = 2
         elif key == "Beweglichkeiten von Majoritätsträgern":
             typ = 3
-        name_list.append(key)
+        if key != "Diode": 
+            name_list.append(key)
         create_data_frame_tex(values[key], key, typ)
     create_pdf(name_list)
 

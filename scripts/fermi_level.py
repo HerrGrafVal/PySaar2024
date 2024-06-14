@@ -122,20 +122,20 @@ if __name__ == "__main__":
     Prepare variables
     """
 
-    h = mpf(fill_values(h).evalf()) # In Js
-    e = mpf(fill_values(q_e).evalf()) # In J
-    k = mpf(fill_values(k).evalf() / e) # In eV/K
-    m_e = mpf(fill_values(m_e).evalf())
-    eps = mpf(fill_values(eps).evalf())
-    W_g = mpf(fill_values(W_g, eV=True).evalf())
-    N_v = mpf(fill_values(N_v).evalf())
-    N_c = mpf(fill_values(N_c).evalf())
-    m_ec = mpf(fill_values(m_ec).evalf())
-    m_hc = mpf(fill_values(m_hc).evalf())
-    T = mpf(fill_values(T).evalf())
-    U_D = mpf(fill_values(U_D).evalf())
-    N_d = mpf(fill_values(N_d).evalf())
-    N_a = mpf(fill_values(N_a).evalf())
+    h = mpf(fill_values(h)) # In Js
+    e = mpf(fill_values(q_e)) # In J
+    k = mpf(fill_values(k) / e) # In eV/K
+    m_e = mpf(fill_values(m_e))
+    eps = mpf(fill_values(eps))
+    W_g = mpf(fill_values(W_g, eV=True))
+    N_v = mpf(fill_values(N_v))
+    N_c = mpf(fill_values(N_c))
+    m_ec = mpf(fill_values(m_ec))
+    m_hc = mpf(fill_values(m_hc))
+    T = mpf(fill_values(T))
+    U_D = mpf(fill_values(U_D))
+    N_d = mpf(fill_values(N_d))
+    N_a = mpf(fill_values(N_a))
     N_dp = N_d
     N_am = N_a
     kT = k * T # In eV

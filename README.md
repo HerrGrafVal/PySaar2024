@@ -2,7 +2,8 @@
 Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfachtem Drift-Diffusions-Modell (DDM).
 
 ## ToDo:
-- [x] [Markdown](https://www.markdownguide.org/cheat-sheet/) für README & Docstrings nutzen
+- [x] [Markdown](https://www.markdownguide.org/cheat-sheet/) für README nutzen
+- [ ] [reStructuredText](https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) für Docstrings nutzen
 - [x] In Git Branch `dev` arbeiten
 - [x] Literaturgrundlage[^1] in Repository speichern
 - [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
@@ -15,7 +16,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     2. [x] Darstellung in Achsendiagrammen, Bändermodell
 - [x] [Visualisierungsmöglichkeiten](https://matplotlib.org/stable/gallery/index.html) des p-n-Übergangs recherchieren
 - [x] Visualisierung des p-n-Übergangs implementieren
-- [ ] Graphiken speichern
+- [x] Graphiken speichern
 ### p-n-Übergang im thermodynamischen Gleichgewicht - Numerisch
 - [x] Verläufe *wichtiger Größen* mit [Matplotlib](https://matplotlib.org/stable/index.html) darstellen:
     1. [x] *Wichtige Größen* als solche bestimmen
@@ -59,6 +60,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - Generate documentation HTML:
     1. Navigate to */PySaar2024/docs/*
     2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
+    3. Ignore the following sphinx warning: `Inline strong start-string without end-string`
 - The HTML documentation contains additional information not present in source code docstrings
 - The HTML documentation contains a step by step on how to perform your own simulation
 - Access documentation HTML:

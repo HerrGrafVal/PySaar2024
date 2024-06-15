@@ -1,16 +1,17 @@
-from symbols import material_parameters as m_keys
-from symbols import constants as c_keys
-from symbols import diode as d_keys
+import json
 from symbols import second
 from pandas import DataFrame
-import json
+from symbols import diode as d_keys
+from symbols import constants as c_keys
+from symbols import material_parameters as m_keys
 
 # ----------------------------------------------------------------------------
 
 # Number of digits to display when passing `float` to `create_data_frame_pdf()`
 FLOAT_DIGITS = 3
 
-# Relative path to the folder containing json with parameters. Corresponding pdf will be saved here. Must end in "/"
+# Relative path to the folder containing json with parameters. Corresponding pdf will be saved here. 
+# Must end in "/"
 PARAM_FOLDER = "../initial_values/"
 
 # File name for parameters. Must end in ".json"
@@ -29,11 +30,19 @@ PDF_PATH = PDF_PATH[:-4]
 
 def build_data_frame(name, var=0):
     """
-    Returns `pandas.DataFrame` instance with quantities defined in *symbols.py* and corresponding values from *JSON_PATH*
+    | Returns pandas DataFrame instance with quantities defined in *scripts/symbols.py*
+    | and corresponding values from *JSON_PATH*
 
-    Parameters
-    : **name** *(string)* Key to dictionary from *JSON_PATH*
-    : **var** *(int)* 0 to define material parameters, 1 to define universal constants, 2 for tau, 3 for mu, 4 for diode parameters
+    :param name: Json dict key, used as DataFrame name
+    :type name: string
+    :param var: 0 for material parameters, 
+                1 for universal constants, 
+                2 for tau, 
+                3 for mu, 
+                4 for diode parameters
+    :type var: int
+    :return: Data Frame
+    :rtype: *pandas.DataFrame*
     """
 
     if var == 2:
@@ -88,25 +97,27 @@ def build_data_frame(name, var=0):
 
 def display_unit(unit_in):
     """
-    Returns string in LATEX math format, after checking for missing unit prefixes
-    Necessary since `cm` is defined as `m/100` in *symbols.py* to avoid unit errors during calculations.
-    E.g. cm^-3 is displayed as 1000000/m**3 while it should be $cm^-3$
+    | Returns string in LATEX math format, after checking for missing unit prefixes
+    | Necessary since ``cm`` is defined as ``m/100`` in *scripts/symbols.py* to avoid unit errors during calculations.
+    | Example: ``cm^-3`` is displayed as ``1000000/m**3`` while it should be ``$cm^-3$``
+    | 
+    | Renders units such as ``A * s / (V * m)`` in LaTeX fractions
+    | 
+    | Will not work on units with multiple missing prefixes!
+    | 
+    | Does not need to work on units like cm^1 since conversion to base units should be done
+    | by lowering exponent in *scripts/symbols.py* accordingly instead of using prefixes.
+    | 
+    | This is achieved by converting ``sympy.core.mul.Mul`` type to string,
+    | then splitting it at \\"\\*\\*\\" and isolating unit abbreviation and power.
+    | Going smallest to largest checking wether prefixes apply, then modifying string to desired output.
 
-    Also renders units such as A * s / (V * m) to Latex Fraction
-
-    Will not work on units with multiple missing prefixes!
-
-    Does not need to work on units like cm^1 since conversion to base units should be done
-    by lowering exponent in symbols.py accordingly instead of using prefixes.
-
-    This is achieved by converting `sympy.core.mul.Mul` type to string,
-    then splitting it at "**" and isolating unit abbreviation and power.
-    Going smallest to largest checking wether prefixes apply,
-    then modifying string to desired output.
-
-    Parameters
-    : **unit_in** *(sympy.core.mul.Mul or sympy.Symbol)* Unit to be rendered in LATEX
+    :param unit_in: Unit to be rendered in LaTeX
+    :type unit_in: sympy.core.mul.Mul or sympy.Symbol
+    :return: LaTeX ready unit
+    :rtype: *string*
     """
+
     text = str(unit_in)
     try:
         unit, power = text.split("**")
@@ -136,13 +147,17 @@ def display_unit(unit_in):
 
 def create_data_frame_tex(df, name, typ):
     """
-    Creates *../initial_values/**name**.tex* with LATEX Table containing **df** contents.
+    | Creates *PARAM_FOLDER/name.tex* with LaTeX Table containing DataFrame contents
 
-    Parameters
-    : **df** *(pandas.DataFrame)* Data to be rendered
-    : **name** *(string)* Desired file name
-    : **typ** *(int)* 0 for material parameters or universal constants, 2 for tau, 2 for mu
+    :param df: Data to be rendered
+    :type df: pandas.DataFrame
+    :param name: Desired file name (without data type suffix) 
+    :type name: string
+    :param typ: 0 for material parameters or universal constants, 2 for tau, 3 for mu
+    :type typ: int
+    :return: *None*
     """
+
     name = name.replace("-", " ")
 
     with open("../initial_values/" + name + ".tex", "w", encoding="utf8") as file:
@@ -167,11 +182,13 @@ def create_data_frame_tex(df, name, typ):
 
 def create_pdf(name_list):
     """
-    Creates pdf at *PDF_PATH* with LATEX Table containing **name_list** contents.
+    | Creates pdf at *PDF_PATH* with LaTeX tables
+    | Executed if __name__ == "__main__"
 
-    Parameters
-    : **name_list** *(list of strings)* .tex files to be included
+    :param name_list: .tex files to include. List entries without data type suffix!
+    :type name_list: list[string]
     """
+
     from pylatex import Document, Command, Section, NoEscape
     doc = Document("basic")
     doc.preamble.append(Command("usepackage", "booktabs"))
@@ -186,12 +203,9 @@ def create_pdf(name_list):
                      compiler="pdfLaTeX")
 
 # ----------------------------------------------------------------------------
-
-"""
-Create **values** dictionary with key : DataFrame pairs
-for material parameters and universal constants as defined
-in `symbols.py` and `JSON_PATH`
-"""
+# Create **values** dictionary with key : DataFrame pairs
+# for material parameters and universal constants as defined
+# in `symbols.py` and `JSON_PATH`
 
 try:
     with open(JSON_PATH, "r", encoding="utf8") as file:
@@ -199,6 +213,7 @@ try:
     parameters.pop("Materialparameter & Naturkonstanten")
 except FileNotFoundError:
     print("No proper file found at", JSON_PATH)
+    print("Take a look at default_parameters.json")
     exit()
 
 values = {}
@@ -218,9 +233,8 @@ for key in parameters.keys():
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    """
-    Execute create_pdf()
-    """
+
+    # Execute create_pdf()
     name_list = []
     for key in values.keys():
         typ = 0

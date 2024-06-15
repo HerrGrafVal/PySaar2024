@@ -10,13 +10,20 @@ Welcome to PySaar2024's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   generated
-
+   generated/cache
+   generated/DDM_ode
+   generated/fermi_level
+   generated/generate_ode_graphs
+   generated/generate_graphs
+   generated/initial_values
+   generated/modell
+   generated/read_dataframe
+   generated/regions
+   generated/symbols
 
 
 Indices and tables
 ==================
 
-* :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

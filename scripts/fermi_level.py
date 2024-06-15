@@ -1,23 +1,28 @@
 from functools import cache
-from mpmath import mp, exp, log, findroot, mpf
-from read_dataframe import fill_values
-from symbols import h, q_e, k, m_e, eps, W_g, N_v, N_c, m_ec, m_hc, T, U_D, N_d, N_a, x_p0, x_n0
 from cache import pickle_save
+from read_dataframe import fill_values
+from mpmath import mp, exp, log, findroot, mpf
+from symbols import h, q_e, k, m_e, eps, W_g, N_v, N_c, m_ec, m_hc, T, U_D, N_d, N_a, x_p0, x_n0
 
 # ----------------------------------------------------------------------------
 
+# Whether or not to hide script Feedback
 HIDE_LOG = False
 
 # ----------------------------------------------------------------------------
 
 def Fermi_Dirac_Distribution(W, W_F):
     """
-    Returns the probability P to find an electron at energy level W if W_F is the Fermi level
-    Note that 1 - P is the probability not to find and electron = to find a hole at W
+    | Returns the probability P to find an electron at energy level W if W_F is the Fermi level
+    | Note that 1 - P is the probability not to find and electron = to find a hole at W
+    | See page 90ff, 108ff
 
-    Parameters
-    : **W** *(mpf)* Energy level of electron
-    : **W_F** *(mpf)* Fermi level
+    :param W: Energy level of electron
+    :type W: mpmath.mpf
+    :param W_F: Fermi level
+    :type W_F: mpmath.mpf
+    :return: Probability
+    :rtype: mpmath.mpf
     """
 
     P = 1 / (1 + exp((W - W_F) / kT))
@@ -27,15 +32,21 @@ def Fermi_Dirac_Distribution(W, W_F):
 @cache
 def Fermi(W_F, N_a=0, N_d=0):
     """
-    Charge neutrality in thermodynamic equilibrium requires pos = neg, see page 114
-    By calculating pos and neg for a given W_F this function checks if above requirement is satisfied.
-    Returns pos - neg (Usually around +- e 24) Therefore findroot later has a tolerance of only 0.1
-    If pos - neg == 0 then W_F is the Fermi level
+    | Charge neutrality in thermodynamic equilibrium requires pos = neg, see page 114
+    | By calculating pos and neg for a given W_F this function checks if above requirement is satisfied.
+    | If pos - neg == 0 then W_F is the Fermi level
+    | Returns pos - neg (Usually around +- e 24)
 
-    Parameters
-    : **W_F** *(mpf)* Energy level to check
-    : **N_a** *(float)* level of p-dotation
-    : **N_d** *(float)* level of n-dotation
+    | This function uses ``@functools.cache`` decorator
+
+    :param W_F: Energy level to check
+    :type W_F: mpmath.mpf
+    :param N_a: Level of p-dotation
+    :type N_a: float
+    :param N_d: Level of n-dotation
+    :type N_d: float
+    :return: Deviation from equilibrium
+    :rtype: mpmath.mpf
     """
 
     pos = N_c * Fermi_Dirac_Distribution(W_c, W_F) + N_a * Fermi_Dirac_Distribution(W_a, W_F)
@@ -45,11 +56,15 @@ def Fermi(W_F, N_a=0, N_d=0):
 @cache
 def Fermi_p(W_F):
     """
-    Calls Fermi() for W_F and dotation matching the p-region of the diode.
-    Passes along return value of Fermi()
+    | Calls ``fermi_level.Fermi(W_F, N_a = N_a)`` and passes return value along
+    | Use this function to evaluate Fermi in p-dotated areas
 
-    Parameters:
-    **W_F** *(mpf)* Energy level to check
+    | This function uses ``@functools.cache`` decorator
+
+    :param W_F: Energy level to check
+    :type W_F: mpmath.mpf
+    :return: Deviation from equilibrium
+    :rtype: mpmath.mpf
     """
 
     return(Fermi(W_F, N_a=N_a))
@@ -57,11 +72,15 @@ def Fermi_p(W_F):
 @cache
 def Fermi_n(W_F):
     """
-    Calls Fermi() for W_F and dotation matching the n-region of the diode.
-    Passes along return value of Fermi()
+    | Calls ``fermi_level.Fermi(W_F, N_d = N_d)`` and passes return value along
+    | Use this function to evaluate Fermi in n-dotated areas
 
-    Parameters:
-    **W_F** *(mpf)* Energy level to check
+    | This function uses ``@functools.cache`` decorator
+
+    :param W_F: Energy level to check
+    :type W_F: mpmath.mpf
+    :return: Deviation from equilibrium
+    :rtype: mpmath.mpf
     """
 
     return(Fermi(W_F, N_d=N_d))
@@ -69,13 +88,18 @@ def Fermi_n(W_F):
 
 def approximate_Fermi_level():
     """
-    Returns approximated Fermi level height over the valence band (divided by 1 electron volt)
-    In thermodynamic equilibrium the Fermi level is constant over space.
-    The Fermi level for the n-dotated and p-dotated must therefore equal one another.
-    To validate results we approximate both areas seperately, compare them and take the average.
+    | Returns approximated Fermi level height over the valence band (divided by 1 electron volt)
+    | In thermodynamic equilibrium the Fermi level is constant over space.
+    | The Fermi level for the n-dotated and p-dotated must therefore equal one another.
+    | To validate results we approximate both areas seperately, compare them and take the average.
 
-    mpmath dps must be set high enough before a call to this function!
-    Tested only with mp.dps >= 22
+    | mpmath.mp.dps must be set high enough before a call to this function!
+    | Tested only with mp.dps >= 22
+
+    | Approximation is performed by finding roots of ``fermi_level.Fermi()`` function
+
+    :return: Fermi level / 1eV
+    :rtype: mpmath.mpf
     """
 
     # Find starting point for p-region
@@ -88,6 +112,7 @@ def approximate_Fermi_level():
     W_start = W_A * i
 
     # Improve approximation numerically
+    # "Bad" tolerance of 0.1 due to high magnitude of Fermi() output
     W_F1 = findroot(Fermi_p, W_start, tol=0.1)
 
     # Find starting point for n-region
@@ -100,6 +125,7 @@ def approximate_Fermi_level():
     W_start = W_A * i
 
     # Improve approximation numerically
+    # "Bad" tolerance of 0.1 due to high magnitude of Fermi() output
     W_F2 = findroot(Fermi_n, W_start, tol=0.1)
 
     # Adjust for lower valence band in n-region

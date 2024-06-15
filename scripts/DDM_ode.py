@@ -1,14 +1,30 @@
 import numpy as np
 import mpmath as mp
 from functools import cache
-from cache import pickle_read, pickle_save
 from read_dataframe import fill_values
+from cache import pickle_read, pickle_save
 from symbols import h, q_e, k, m_e, eps, W_g, N_v, N_c, m_ec, m_hc, T, U_D, N_d, N_a, x_p0, x_n0, WIDTH
 
 # ----------------------------------------------------------------------------
 
 @cache
 def DDM(phi, N_am=0, N_dp=0):
+    """
+    | Returns *list[float or mpmath.mpf]* containing ``[W_v, W_c, p, n, rho]``
+    | Output obeys Drift-Diffusion-Modell (DDM) equations according to page 183f
+
+    | This function uses ``@functools.cache`` decorator
+
+    :param phi: Potential for DDM evaluation
+    :type phi: float or mpmath.mpf
+    :param N_am: Density of ionised acceptor ions for DDM evaluation
+    :type N_am: float or mpmath.mpf
+    :param N_dp: Density of ionised donator ions for DDM evaluation
+    :type N_dp: float or mpmath.mpf
+    :return: ``[W_v, W_c, p, n, rho]`` DDM values
+    :rtype: *list[float or mpmath.mpf]*
+    """
+
     W_v = -phi  # In eV, = -e * phi / {e}
     W_c = W_v + W_g  # In eV
     p = N_v * mp.exp((- (W_F - W_v) / (kT)))
@@ -19,20 +35,70 @@ def DDM(phi, N_am=0, N_dp=0):
 
 @cache
 def DDM_p(phi):
+    """
+    | Calls ``DDM_ode.DDM(phi, N_am = N_am)`` and passes return value along
+    | Use this function to evaluate DDM in p-dotated areas
+
+    | This function uses ``@functools.cache`` decorator
+
+    :param phi: Potential for DDM evaluation
+    :type phi: float or mpmath.mpf
+    :return: ``[W_v, W_c, p, n, rho]`` DDM values
+    :rtype: *list[float or mpmath.mpf]*
+    """
+
     return DDM(phi, N_am=N_am)
 
 @cache
 def DDM_n(phi):
+    """
+    | Calls ``DDM_ode.DDM(phi, N_dp = N_dp)`` and passes return value along
+    | Use this function to evaluate DDM in n-dotated areas
+
+    | This function uses ``@functools.cache`` decorator
+
+    :param phi: Potential for DDM evaluation
+    :type phi: float or mpmath.mpf
+    :return: ``[W_v, W_c, p, n, rho]`` DDM values
+    :rtype: *list[float or mpmath.mpf]*
+    """
+
     return DDM(phi, N_dp=N_dp)
 
+
 def fun_p(x, z):
+    """
+    | Return dz/dx according to ODE definition
+    | Use this function to evaluate DDM in p-dotated areas
+
+    :param x: Current x value (~ time, for typical ODE problems)
+    :type x: float or mpmath.mpf
+    :param z: Current z value (state-space-representation), must have 2 entries
+    :type z: numpy.array
+    :return: dz/dx Array with two entries
+    :rtype: numpy.array
+    """
+
     phi = z[0]  # In eV
     E = z[1]  # In V/m
     rho = DDM_p(phi)[4]
     dzdx = [-E, rho / eps]
     return dzdx
 
+
 def fun_n(x, z):
+    """
+    | Return dz/dx according to ODE definition
+    | Use this function to evaluate DDM in n-dotated areas
+
+    :param x: Current x value (~ time, for typical ODE problems)
+    :type x: float or mpmath.mpf
+    :param z: Current z value (state-space-representation), must have 2 entries
+    :type z: numpy.array
+    :return: dz/dx Array with two entries
+    :rtype: numpy.array
+    """
+
     phi = z[0]  # In eV
     E = z[1]  # In V/m
     rho = DDM_n(phi)[4]
@@ -43,10 +109,7 @@ def fun_n(x, z):
 
 if __name__ == "__main__":
 
-    """
-    Prepare variables of type float
-    """
-
+    # Prepare variables of type float
     e = float(fill_values(q_e))  # In J
     k = float(fill_values(k)) / e  # In eV/K
     T = float(fill_values(T))  # In K
@@ -68,10 +131,7 @@ if __name__ == "__main__":
     WIDTH = float(fill_values(WIDTH))
 
     # ----------------------------------------------------------------------------
-
-    """
-    Define band structure
-    """
+    # Define band structure
 
     W_v = 0
     W_c = W_g
@@ -82,22 +142,23 @@ if __name__ == "__main__":
         exit()
 
     # ----------------------------------------------------------------------------
+    # SciPy sole_ivp (method = RK45) yielded unsatisfactory results
+    # other methods (e.g. DOP853) fail to work, see previous commit
+    # mpmath odefun (method = taylor) produces satisfactory results, but can't iterate backwards
 
-    """
-    SciPy sole_ivp (method = RK45) yielded unsatisfactory results, other methods fail to work see previous commit
-    mpmath odefun (method = taylor) produces satisfactory results, but can't iterate backwards
-
-    x_p, x_n are defined by fieldstrength reaching zero and continuity in x = 0
-    We assume they can be found in [2*x_p0 ; 2*x_n0]
-
-         z0 = phi
-    z  = z1 = E
-         
-    rho = DDM(z0)[4]
-
-    dz   z0. = -z1
-    dx = z1. = rho/eps
-    """
+    # ----------------------------------------------------------------------------
+    # x_p, x_n are defined by fieldstrength reaching zero and continuity in x = 0
+    # We assume they can be found in [2*x_p0 ; 2*x_n0]
+    #
+    # ODE - Setup
+    #
+    #      z0 = phi
+    # z  = z1 = E
+    #
+    # rho = DDM(z0)[4]
+    #
+    # dz   z0. = -z1
+    # dx = z1. = rho/eps
 
     STEPS = 100
 
@@ -119,13 +180,10 @@ if __name__ == "__main__":
     rho_n = []
 
     # ----------------------------------------------------------------------------
+    # Generate phi, E values for STEPS amount of x values per area
 
-    """
-    Generate phi, E values for STEPS amount of x values per area
-    """
-
-    stepsize_p = -x_p0*2/STEPS
-    stepsize_n = x_n0*2/STEPS
+    stepsize_p = -x_p0 * 2 / STEPS
+    stepsize_n = x_n0 * 2 / STEPS
 
     x_span_p = np.arange(0, -x_p0 * 2, stepsize_p).astype(mp.mpf)
     x_span_n = np.arange(0, x_n0 * 2, stepsize_n).astype(mp.mpf)
@@ -152,17 +210,14 @@ if __name__ == "__main__":
     zz_n = np.array([phi_n, E_n])
 
     # ----------------------------------------------------------------------------
-
-    """
-    Check where zz_p best meets zz_n in terms of phi AND E
-    """
+    # Check where zz_p best meets zz_n in terms of phi AND E
 
     DELTA = []
-    for k, zz_P in enumerate(zz_p.T[1:,:]):
-        for j, zz_N in enumerate(zz_n.T[1:,:]):
+    for k, zz_P in enumerate(zz_p.T[1:, :]):
+        for j, zz_N in enumerate(zz_n.T[1:, :]):
             delta = abs([1, 1] - np.divide(zz_P, zz_N))
             DELTA.append([k + 1, j + 1, delta])
-    best_total = min(DELTA, key = lambda x: x[2][0] + x[2][1])
+    best_total = min(DELTA, key=lambda x: x[2][0] + x[2][1])
 
     index_p = best_total[0]
     index_n = best_total[1]
@@ -172,7 +227,7 @@ if __name__ == "__main__":
     # xx_p needs to be reversed
     xx_p = -1 * x_span_p[:index_p + 1]
     xx_p = np.flip(xx_p)
-    #xx_p -= stepsize_p # Only for improved visualisation
+    # xx_p -= stepsize_p # Only for improved visualisation
     phi_p = phi_p[:index_p + 1]
     E_p = E_p[:index_p + 1]
 
@@ -180,17 +235,14 @@ if __name__ == "__main__":
     # crop all lists to end at approximated continuity
     # phi and E need to be reversed
     xx_n = x_span_n[:index_n + 1]
-    xx_n += stepsize_n # Prevent overlap at x = 0
+    xx_n += stepsize_n  # Prevent overlap at x = 0
     phi_n = phi_n[:index_n + 1]
     phi_n.reverse()
     E_n = E_n[:index_n + 1]
     E_n.reverse()
 
     # ----------------------------------------------------------------------------
-
-    """
-    Evaluate DDM for all relevant potentials
-    """
+    # Evaluate DDM for all relevant potentials
 
     for phi in phi_p:
         ddm = DDM_p(phi)
@@ -209,10 +261,7 @@ if __name__ == "__main__":
         rho_n.append(ddm[4])
 
     # ----------------------------------------------------------------------------
-
-    """
-    Join p and n values together
-    """
+    # Join p and n values together
 
     xx = list(xx_p) + list(xx_n)
     phi = phi_p + phi_n
@@ -227,10 +276,7 @@ if __name__ == "__main__":
     rho = rho_p + rho_n
 
     # ----------------------------------------------------------------------------
-
-    """
-    Include neutral areas
-    """
+    # Include neutral areas
 
     x_p = xx[0]
     x_n = xx[-1]
@@ -240,15 +286,18 @@ if __name__ == "__main__":
     xx = [w_p] + xx + [w_n]
     xx_rho = [w_p] + xx_rho + [w_n]
 
+    # ----------------------------------------------------------------------------
+    # Create and pickle dict from results
+
     results = {
-        "W_F" : W_F,
-        "x_p" : x_p,
-        "x_n" : x_n,
-        "w_p" : w_p,
-        "w_n" : w_n,
-        "xx" : xx,
-        "xx_rho" : xx_rho
-        }
+        "W_F": W_F,
+        "x_p": x_p,
+        "x_n": x_n,
+        "w_p": w_p,
+        "w_n": w_n,
+        "xx": xx,
+        "xx_rho": xx_rho
+    }
 
     for name in ["phi", "E", "W_v", "W_c", "p", "n", "rho"]:
         values = eval(name)

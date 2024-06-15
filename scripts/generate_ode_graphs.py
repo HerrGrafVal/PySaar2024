@@ -1,7 +1,6 @@
 from cache import pickle_read
 import matplotlib.pyplot as plt
 from matplotlib.ticker import EngFormatter
-from matplotlib.transforms import Bbox
 
 # ----------------------------------------------------------------------------
 
@@ -11,12 +10,9 @@ SHOW_PLOT = True
 SHOW_X_NUMBERS = False
 
 # ----------------------------------------------------------------------------
+# Retrieve simulation results
 
 if __name__ == "__main__":
-
-    """
-    Retrieve simulation results
-    """
 
     try:
         results = pickle_read("ODE_solution")
@@ -41,10 +37,7 @@ if __name__ == "__main__":
     w_n = results["w_n"]
 
     # ----------------------------------------------------------------------------
-
-    """
-	Setup for plots
-	"""
+    # Setup for plots
 
     form_x = EngFormatter(unit="$m$")
     form_cc = EngFormatter()
@@ -52,24 +45,29 @@ if __name__ == "__main__":
     form_E = EngFormatter(unit="$V / m$")
     form_phi = EngFormatter(unit="$V$")
     form_W = EngFormatter(unit="$eV$")
-    
+
     pn = ["cc", "rho", "E", "phi", "W"]
 
     label = {
-            "rho" : ["$\\rho (x)$", "Raumladungsdichte"],
-            "E" : ["$E (x)$", "Feldstärke"],
-            "phi" : ["$\\varphi (x)$", "Potential"]
-        }
+        "rho": ["$\\rho (x)$", "Raumladungsdichte"],
+        "E": ["$E (x)$", "Feldstärke"],
+        "phi": ["$\\varphi (x)$", "Potential"]
+    }
 
     # ----------------------------------------------------------------------------
-
-    """
-    Generate single figure with subplot for each graph
-    """
+    # Generate single figure with subplot for each graph
 
     fig, (ax_cc, ax_rho, ax_E, ax_phi, ax_W) = plt.subplots(5, 1, layout="constrained")
 
+    # Adjust subplot spacing
+    size = fig.get_size_inches()
+    w_pad, h_pad, wspace, hspace = fig.get_constrained_layout_pads()
+    fig.set_size_inches((size[0] * 1.25, size[1] * 1.5))
+    fig.set_constrained_layout_pads(w_pad=w_pad, h_pad=h_pad * 7.5, wspace=wspace, hspace=hspace * 7.5)
+
+    # ----------------------------------------------------------------------------    
     # Populate subplots
+
     for i in pn:
         ax = eval("ax_" + i)
 
@@ -106,22 +104,8 @@ if __name__ == "__main__":
         else:
             ax.set_xticks([w_p, x_p, 0, x_n, w_n], ["$-w_p$", "$x_p$", "$0$", "$x_n$", "$w_n$"])
 
-    # Adjust subplot spacing
-    size = fig.get_size_inches()
-    size[0] *= 1.25
-    size[1] *= 1.5
-    w_pad, h_pad, wspace, hspace = fig.get_constrained_layout_pads()
-    h_pad *= 7.5
-    hspace *= 7.5
-    fig.set_size_inches(size)
-    fig.set_constrained_layout_pads(w_pad=w_pad, h_pad=h_pad, wspace=wspace, hspace=hspace)
-
-
     # ----------------------------------------------------------------------------
-
-    """
-	Display plots or save png
-	"""
+    # Display plots or save png
 
     if SHOW_PLOT:
         plt.show()
@@ -131,11 +115,13 @@ if __name__ == "__main__":
         from cache import SAVE_FOLDER
 
         # Save full figure
-        plt.savefig("../simulation_results/DDM_graph.png")
+        plt.savefig(SAVE_FOLDER + "DDM_graph.png")
         plt.close(fig)
 
+        # ----------------------------------------------------------------------------
+        # Create new figures for each graph
+        
         for i in pn:
-            # Create new figures for each graph
             exec("fig_" + i + ", ax_" + i + " = plt.subplots(1, 1, layout = 'constrained')", globals())
 
             new_fig = eval("fig_" + i)
@@ -176,53 +162,53 @@ if __name__ == "__main__":
 
             # Adjust figure aspect ratio
             size = new_fig.get_size_inches()
-            size[0] *= 1.75 # Width
-            size[1] *= 0.4 # Height
+            size[0] *= 1.75  # Width
+            size[1] *= 0.4  # Height
             new_fig.set_size_inches(size)
 
             # Save single graph figure
-            plt.savefig(SAVE_FOLDER + i + "_graph.png", bbox_inches = "tight")
+            plt.savefig(SAVE_FOLDER + i + "_graph.png", bbox_inches="tight")
 
             # Close figure
             plt.close(new_fig)
 
+"""
+Attempt to save individual subplots from single figure
+Problem: Title from adjacent graphs clips into saved images
 
-        """
-        Attempt to save individual subplots from single figure
-        Problem: Title from adjacent graphs clips into saved images
+from matplotlib.transforms import Bbox
 
-        for i in pn:
-            axes = eval("ax_" + i)
-            items = axes.get_xticklabels() + axes.get_yticklabels()
-            items += [axes, axes.title, eval("legend_" + i)]
-            bbox = Bbox.union([item.get_window_extent() for item in items])
-            extent = bbox.expanded(1.05, 1.1).transformed(fig.dpi_scale_trans.inverted())
-            plt.savefig("../simulation_results/" + i + "_graph.png", bbox_inches=extent)
-		"""
-        
+for i in pn:
+    axes = eval("ax_" + i)
+    items = axes.get_xticklabels() + axes.get_yticklabels()
+    items += [axes, axes.title, eval("legend_" + i)]
+    bbox = Bbox.union([item.get_window_extent() for item in items])
+    extent = bbox.expanded(1.05, 1.1).transformed(fig.dpi_scale_trans.inverted())
+    plt.savefig("../simulation_results/" + i + "_graph.png", bbox_inches=extent)
+"""
 
-        """
-        Attempt to move existing axes to seperate figures
-        Problem: Cannot control aspect ratio in new figure
-        
-        # If not SHOW_PLOT, Whether to make seperate figure objects available outside of loop
-        KEEP_FIGURES = False
-        
-        # Move all plots to their own figure
-        for i in pn:
-            if KEEP_FIGURES:
-                exec("fig_" + i + " = plt.figure()", globals())
-                new_fig = eval("fig_" + i)
-            else:
-                new_fig = plt.figure()
-            ax = eval("ax_" + i)
-            ax.remove()
-            ax.figure = new_fig
-            new_fig.axes.append(ax)
-            new_fig.add_axes(ax)
-            dummy_ax = new_fig.add_subplot(111)
-            ax.set_position(dummy_ax.get_position())
-            dummy_ax.remove()
-        plt.close(fig)
-        plt.show()
-        """
+"""
+Attempt to move existing axes to seperate figures
+Problem: Cannot control aspect ratio in new figure
+
+# If not SHOW_PLOT, Whether to make seperate figure objects available outside of loop
+KEEP_FIGURES = False
+
+# Move all plots to their own figure
+for i in pn:
+    if KEEP_FIGURES:
+        exec("fig_" + i + " = plt.figure()", globals())
+        new_fig = eval("fig_" + i)
+    else:
+        new_fig = plt.figure()
+    ax = eval("ax_" + i)
+    ax.remove()
+    ax.figure = new_fig
+    new_fig.axes.append(ax)
+    new_fig.add_axes(ax)
+    dummy_ax = new_fig.add_subplot(111)
+    ax.set_position(dummy_ax.get_position())
+    dummy_ax.remove()
+plt.close(fig)
+plt.show()
+"""

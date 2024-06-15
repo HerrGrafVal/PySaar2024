@@ -22,7 +22,7 @@ extensions = [
 
 4. Navigate to /PySaar2024/docs/
 
-5. Execute `sphinx-apidoc -o source/generated ../scripts/ -e -f`
+5. Execute `sphinx-apidoc -o source/generated ../scripts/ -e -M -t source/_templates/apidoc` Add `-f` to overwrite previous versions.
 
 6. Change /PySaar2024/docs/source/index.rst to include
 

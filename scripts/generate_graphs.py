@@ -1,39 +1,67 @@
 from symbols import *
-from read_dataframe import fill_values
-from cache import read_from_file, save_to_npy, read_from_npy
 from sympy import lambdify
-from numpy import linspace, interp, array, float64
 import matplotlib.pyplot as plt
+from read_dataframe import fill_values
+from numpy import linspace, interp, array, float64
 from matplotlib.patches import FancyArrowPatch as Arrow
+from cache import read_from_file, save_to_npy, read_from_npy
 # from matplotlib.ticker import EngFormatter as Form
 
 # ----------------------------------------------------------------------------
 
+# Whether or not to use cached values rather than calculate new ones
 USE_CACHED_PN_VALUES = False
 USE_CACHED_CURRENT_VALUES = False
+
+# Whether or not to hide script Feedback
 HIDE_CACHE_LOG = False
+
+# Whether or not to create graphs
 PLOT_PN = True
 PLOT_CURRENT = True
+
+# Whether to show figures or save .pngs
+SHOW_PLOT = False
+
+# Starting at THRESHOLD * ampere diode is treated as ideal conductor
 THRESHOLD = 10000
 
 # ----------------------------------------------------------------------------
 
 def render(axes, x, y, title, **kwargs):
     """
-    Base function to plot data. Returns line object drawn in axes
+    | Base function to plot data
 
-    Parameters
-    : **axes** *(matplotlib.axes)* Axes to plot to
-    : **x, y** *(numpy.array)* Data to plot against each other
-    : **title** *(string)* Plot title to display
-    : **kwargs**
-    : **label** *(string)* Label to pass onto line object created from x, y
-    : **center_title** *(bool)* Whether or not to center the title. Default title location is left
-    : **adjust_ticks** *(bool)* Whether or not adjustment to ticks should be conducted
-    : **include_zero** *(bool)* Whether or not x = 0 should be marked on x axis
-    : **arrow** *(bool)* Whether or not x and y axis are drawn with arrow tips
-    : **bottom** *(bool)* Whether or not the x axis should be moved down to min(y)
-    : **xlabel_coord** & **ylabel_coord** *(float)* Coordinates for x, y axis label
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param x: Data to plot
+    :type x: numpy.array or list
+    :param y: Data to plot
+    :type y: numpy.array or list
+    :param title: Axes title to display
+    :type title: string
+    :param **kwargs: See below
+    :returns: *None*
+    
+    +-------------------+-----------+-------------------------------------------+
+    | \**kwargs         | Type      | Explanation                               |
+    +===================+===========+===========================================+
+    | **label**         | *string*  | Label to pass onto line object created    |
+    |                   |           | from x, y.                                |
+    +-------------------+-----------+-------------------------------------------+
+    | **center_title**  | *bool*    | Whether to center the title, default=left |
+    |                   |           | to prevent overlap with yaxis label       |
+    +-------------------+-----------+-------------------------------------------+
+    | **adjust_ticks**  | *bool*    | Whether or not xticks should be adjusted  |
+    +-------------------+-----------+-------------------------------------------+
+    | **include_zero**  | *bool*    | Whether or not x=0 should be marked       |
+    +-------------------+-----------+-------------------------------------------+
+    | **arrow**         | *bool*    | Whether or not x and y axis are drawn     |
+    |                   |           | with arrow tips                           |
+    +-------------------+-----------+-------------------------------------------+
+    | **bottom**        | *bool*    | Whether or not the x axis should be moved |
+    |                   |           | down to min(y)                            |
+    +-------------------+-----------+-------------------------------------------+
     """
 
     # Setup
@@ -81,12 +109,18 @@ def render(axes, x, y, title, **kwargs):
         else:
             axes.set_xticks([x[0], x_p, x_n, x[-1]], ["$-w_p$", "$x_p$", "$x_n$", "$w_n$"])
 
-    # Return line object drawn in axes
-    return line
 
 def render_rho(axes, x, y):
     """
-    Adjust render() to plot charge density
+    | Adjust ``generate_graphs.render()`` results to plot charge density
+
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param x: Data to plot
+    :type x: numpy.array or list
+    :param y: Data to plot
+    :type y: numpy.array or list
+    :return: *None*
     """
 
     # Set y label, call render(), change y ticks and labels
@@ -97,7 +131,15 @@ def render_rho(axes, x, y):
 
 def render_E(axes, x, y):
     """
-    Adjust render() to plot field strength
+    | Adjust ``generate_graphs.render()`` results to plot field strength
+
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param x: Data to plot
+    :type x: numpy.array or list
+    :param y: Data to plot
+    :type y: numpy.array or list
+    :return: *None*
     """
 
     # Set y label, call render(), change y axis length, change y ticks and labels
@@ -109,6 +151,16 @@ def render_E(axes, x, y):
 
 def render_phi(axes, x, y):
     """
+    | Adjust ``generate_graphs.render()`` results to plot potential
+
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param x: Data to plot
+    :type x: numpy.array or list
+    :param y: Data to plot
+    :type y: numpy.array or list
+    :return: *None*
+    """"""
     Adjust render() to plot potential
     """
 
@@ -120,7 +172,15 @@ def render_phi(axes, x, y):
 
 def render_W(axes, x, y):
     """
-    Adjust render() to plot band structure
+    | Adjust ``generate_graphs.render()`` results to plot band structure
+
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param x: Data to plot
+    :type x: numpy.array or list
+    :param y: Data to plot
+    :type y: numpy.array or list
+    :return: *None*
     """
 
     # Call render() for W_V, plot W_C, remove y ticks
@@ -137,7 +197,7 @@ def render_W(axes, x, y):
 
     # Add legend
     h, l = axes.get_legend_handles_labels()
-    axes.legend(h[::-1], l[::-1], loc="lower left")
+    axes.legend(h[::-1], l[::-1], loc="center right", bbox_to_anchor=(1,1))
 
     # Draw indicator for band change
     YSCALE = 0.1 * y[-1]
@@ -149,7 +209,15 @@ def render_W(axes, x, y):
 
 def render_current(axes, uu, ii):
     """
-    Adjust render() to plot current over voltage
+    | Adjust ``generate_graphs.render()`` results to plot current over voltage
+
+    :param axes: Axes on which to plot
+    :type axes: matplotlib.axes
+    :param uu: Data to plot
+    :type uu: numpy.array or list
+    :param ii: Data to plot
+    :type ii: numpy.array or list
+    :return: *None*
     """
 
     # Call render() for I(U)
@@ -170,7 +238,7 @@ def render_current(axes, uu, ii):
     axes.plot([VOLTAGE_START, last_below, first_above], [0, 0, UU], label="Interpolation")
     
     # Show legend
-    axes.legend(loc="lower left")
+    axes.legend(loc="center")
 
     # Adjust xticks
     xticks = [round(tick, 2) for tick in axes.get_xticks()]
@@ -187,6 +255,9 @@ def render_current(axes, uu, ii):
 
 if __name__ == "__main__":
 
+    # ----------------------------------------------------------------------------
+    # Generate pn-graphs if desired
+
     if PLOT_PN: # Plot rho(x), E(x), phi(x), W(x)
 
         if USE_CACHED_PN_VALUES: # Read numpy arrays from save
@@ -197,13 +268,13 @@ if __name__ == "__main__":
                 xx, W_v_values = read_from_npy("W_v_values")
                 
                 if not HIDE_CACHE_LOG:
-                    print("Using previously saved pn-values. Change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False to calculate new ones instead.")
+                    print("Using previously saved pn-values. Change USE_CACHED_PN_VALUES in generate_graphs.py line 13 to False to calculate new ones instead.")
 
                 x_p = float(fill_values(x_p))
                 x_n = float(fill_values(x_n))
 
             except FileNotFoundError:
-                print("Saved pn-values missing. Please change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to False and try again.")
+                print("Saved pn-values missing. Please change USE_CACHED_PN_VALUES in generate_graphs.py line 13 to False and try again.")
                 exit()
 
         else: # Calculate numpy arrays to plot
@@ -212,7 +283,7 @@ if __name__ == "__main__":
             func_names = ["rho", "E", "phi", "W_v"]
             try:
                 for i in func_names:
-                    exec(i + " = read_from_file('" + i + "_results.txt', namespace)")
+                    exec(i + " = read_from_file('" + i + "_results', namespace)")
             except FileNotFoundError:
                 print("Saved pn-function(s) missing. Please execute modell.py and try again.")
                 exit()
@@ -241,21 +312,26 @@ if __name__ == "__main__":
             save_to_npy("W_v_values", xx, W_v_values)
 
             if not HIDE_CACHE_LOG:
-                print("pn-Values saved. You may now change USE_CACHED_PN_VALUES in generate_graphs.py line 23 to True to speed up future calls to this script")
+                print("pn-Values saved. You may now change USE_CACHED_PN_VALUES in generate_graphs.py line 13 to True to speed up future calls to this script")
 
-# ----------------------------------------------------------------------------
-
+        # ----------------------------------------------------------------------------
         # Generate subplots and pass them to render functions
-        no_ext_volt_fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1)
-        no_ext_volt_fig.subplots_adjust(hspace=1.5)
+
+        pn_fig, (plt_rho, plt_E, plt_phi, plt_W) = plt.subplots(4, 1, layout = "constrained")
+        
+        # Adjust subplot spacing
+        size = pn_fig.get_size_inches()
+        w_pad, h_pad, wspace, hspace = pn_fig.get_constrained_layout_pads()
+        pn_fig.set_size_inches((size[0] * 1.25, size[1] * 1.5))
+        pn_fig.set_constrained_layout_pads(w_pad=w_pad, h_pad=h_pad * 7.5, wspace=wspace, hspace=hspace * 7.5)
 
         render_rho(plt_rho, xx, rho_values)
         render_E(plt_E, xx, E_values)
         render_phi(plt_phi, xx, phi_values)
         render_W(plt_W, xx, W_v_values)
 
-
-# ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
+    # Generate I(U) graph if desired
 
     if PLOT_CURRENT: # Plot current over voltage
 
@@ -265,10 +341,10 @@ if __name__ == "__main__":
                 VOLTAGE_START = uu[0]
 
                 if not HIDE_CACHE_LOG:
-                    print("Using previously saved I(U)-values. Change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to False to calculate new ones instead.")
+                    print("Using previously saved I(U)-values. Change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 14 to False to calculate new ones instead.")
 
             except FileNotFoundError:
-                print("Saved current-values missing. Please change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to False and try again.")
+                print("Saved current-values missing. Please change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 14 to False and try again.")
                 exit()
 
         else: # Calculate numpy arrays to plot
@@ -298,15 +374,33 @@ if __name__ == "__main__":
             save_to_npy("I_of_U_results", uu, ii)
             
             if not HIDE_CACHE_LOG:
-                print("I(U) Values saved. You may now change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 24 to True to speed up future calls to this script")
+                print("I(U) Values saved. You may now change USE_CACHED_CURRENT_VALUES in generate_graphs.py line 14 to True to speed up future calls to this script")
 
         # Generate new axes in seperate figure and call render_current()
-        plt.figure()
+        I_U_fig = plt.figure()
         axes = plt.gca()
 
         render_current(axes, uu, ii)
 
-# ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
+    # Show or save figures
 
-    # Show figure(s)
-    plt.show()
+    if SHOW_PLOT:
+        # Show figure(s)
+        plt.show()
+
+    else:
+        # Additional imports
+        from cache import SAVE_FOLDER
+
+        if PLOT_PN:
+            # Save pn-figure
+            plt.figure(pn_fig)
+            plt.savefig(SAVE_FOLDER + "pn_graph.png")
+            plt.close(pn_fig)
+
+        if PLOT_CURRENT:
+            # Save current-figure
+            plt.figure(I_U_fig)
+            plt.savefig(SAVE_FOLDER + "I(U)_graph.png", bbox_inches = "tight")
+            plt.close(I_U_fig)

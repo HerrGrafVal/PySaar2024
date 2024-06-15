@@ -1,39 +1,20 @@
 from symbols import *
-from regions import NeutralPRegion, NeutralNRegion, P_SCR, N_SCR
 from cache import save_to_file
-from sympy import Piecewise, exp, coth
 from read_dataframe import fill_values
-
-# ----------------------------------------------------------------------------
-
-"""
-Define areas ONE-FOUR as follows
-"""
-
-# neutral-p-region -w_p <= x < x_p
-ONE = NeutralPRegion()
-
-# p-SCR x_p <= x < 0
-TWO = P_SCR()
-
-# n-SCR 0 < x <= x_n
-THREE = N_SCR()
-
-# neutral-n-region x_n < x <= w_n
-FOUR = NeutralNRegion()
-
-PN = [ONE, TWO, THREE, FOUR]
+from sympy import Piecewise, exp, coth
+from regions import NeutralPRegion, NeutralNRegion, P_SCR, N_SCR
 
 # ----------------------------------------------------------------------------
 
 def calculate_current(U):
     """
-    Returns current/ampere (float) based on parameter
-    Currently ignores I_rg, see calculate_I_rg() documentation!
+    | Returns current (divided by 1 ampere) based on U
+    | Currently ignores I_rg, see ``modell.calculate_I_rg()`` documentation!
 
-    Parameter
-    : **U** *(float)* External voltage
+    :param U: External voltage
+    :type U: float
     """
+
     if U in [0, 0 * volt]:
         return 0
 
@@ -44,12 +25,13 @@ def calculate_current(U):
 
     return current
 
+
 def calculate_I_s(U):
     """
-    Returns saturation current/ampere (float) based on U
+    | Returns saturation current (divided by 1 ampere) based on U
 
-    Parameter
-    : **U** *(float)* External voltage, needed for calculation of SCR width
+    :param U: External voltage, required to calculate SCR width
+    :type U: float
     """
 
     if U in [0, 0 * volt]:
@@ -68,27 +50,23 @@ def calculate_I_s(U):
 
     return fill_values(I_s, parameter = parameter)
 
+
 def calculate_I_rg(U):
     """
-                                / \
-                               / | \
-                              /  .  \
-                             /_______\
-
-    The following implementation is not currently executable.
-    Overflow errors from using numbers of high and small magnitudes
-    prevent scipy from evaluating the integral defined further down.
-    Scaling of integral arguments and output needs to be implemented.
-    """
+    | The following implementation currently **returns 0**
+    | Overflow errors from using numbers of high and small magnitudes
+    | prevent scipy from evaluating the integral defined further down.
+    | Scaling of integral arguments and output needs to be implemented.
+    | Using mpmath here might do the trick too.
+    |
+    | **calculate_I_rg** ( *U* )
+    | Returns I_rg current/ampere (float) based on parameter
     
+    :param U: External voltage, required to calculate SCR width
+    :type U: float
+    """
     return 0
 
-    """
-    Returns I_rg current/ampere (float) based on parameter
-
-    Parameter
-    : **U** *(float)* External voltage, needed for calculation of SCR width
-    """
 
     import scipy.integrate as integrate
 
@@ -132,6 +110,23 @@ def calculate_I_rg(U):
     return fill_values(I_rg)
 
 # ----------------------------------------------------------------------------
+# Define areas ONE-FOUR as follows
+
+# neutral-p-region -w_p <= x < x_p
+ONE = NeutralPRegion()
+
+# p-SCR x_p <= x < 0
+TWO = P_SCR()
+
+# n-SCR 0 < x <= x_n
+THREE = N_SCR()
+
+# neutral-n-region x_n < x <= w_n
+FOUR = NeutralNRegion()
+
+PN = [ONE, TWO, THREE, FOUR]
+
+# ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -150,6 +145,6 @@ if __name__ == "__main__":
 
     # Save simulation results to .txt files
     for i in func_names:
-        save_to_file(i + "_results.txt", eval(i))
+        save_to_file(i + "_results", eval(i))
 
 

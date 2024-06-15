@@ -4,8 +4,10 @@ from symbols import *
 
 # ----------------------------------------------------------------------------
 
+# Semiconductor substrate to use for simulations
 ELEMENT = "Si"
 
+# See WIDTH.desc in scripts/symbols.py
 default_parameter = {
     U_ext : 0 * volt,
     WIDTH : 3
@@ -14,6 +16,19 @@ default_parameter = {
 # ----------------------------------------------------------------------------
 
 def populate_dict(element=ELEMENT):
+    """
+    | Popultates json_parameter dict with values from pandas DataFrames
+    | Implemented after realising that accessing a dictionary is a lot faster than a DataFrame
+    | Executed upon import of *scripts/read_dataframe.py*
+    |
+    | This makes creation of the DataFrames unnecessary outside of pdf creation.
+    | **ToDo:** Adjust *scripts/initial_values.py* accordingly
+
+    :param element: Semiconductor substrate to fetch values from
+    :type element: string
+    :returns: *None*
+    """
+
     global json_parameter
     for df in ["Naturkonstanten", "Materialparameter " + element, "Diode"]:
         for index, konst in values[df].iterrows():
@@ -25,17 +40,37 @@ def populate_dict(element=ELEMENT):
 
 def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursive_call=False, eV = False):
     """
-    Returns `sympy.expression` instance with all possible parameters substituted for their values
+    | Returns sympy.expression instance where all possible symbols are substituted for their numeric values
+    | Returns float if all symbols can be substituted
+    | Returns unchanged input if said input contains no symbols
+    | All substituted values are in full base units [1]_
 
-    Parameters
-    : **func_in** *(sympy.expression)* Expression to fill with values
-    : **element** *(string)* Optional, which element's values to choose from. Default set in ELEMENT
+    :param func_in: Expression to fill with values
+    :type func_in: sympy.expression
+    :param parameter: Parameters to use instead of default (json) ones, 
+                      see *scripts/read_dataframe.py* line 11 ``default_parameter`` for syntax
+    :type parameter: dict
+    :param element: Semiconductor substrate to fetch values from
+    :type element: string
+    :param recursive_call: For internal use only!
+    :type recursive_call: bool
+    :param eV: Whether output should be in eV instead of J,
+               Only use this if you know what you're doing!
+    :type eV: bool
+    :returns: func_in, with as little symbols left as possible
+    :rtype: *float* when possible, *sympy.expression* otherwise
+
+    .. [1] Unless eV = True 
     """
+
+    try:
+        names = func_in.free_symbols
+    except AttributeError:
+        print("fill_values() received non sympy input. Returns input unchanged.")
+        return func_in
 
     # Update default_parameter with those from function argument without modifying orginial dict
     parameter = {**default_parameter, **parameter}
-
-    names = func_in.free_symbols
 
     # Check parameter dict for matching symbols
     for s in names:
@@ -90,7 +125,20 @@ def fill_values(func_in, parameter = default_parameter, element=ELEMENT, recursi
 
 @cache
 def pick_tau():
+    """
+    | Returns appropriate tau value depending on semiconductor substrate
+    | Called from ``read_dataframe.fill_values()`` during ``modell.calculate_I_rg()``
+    | 
+    | This function uses ``@functools.cache`` decorator
+
+    :return: \\{tau\\} \\* 1 second
+    :rtype: *sympy.expression*
+    """
+
     df = values["Lebensdauer-Zeitkonstanten der Minoritäten"]
+    if ELEMENT not in df.index:
+        from initial_values import JSON_PATH
+        raise NotImplementedError("No \\tau values for the current substrate available in " + JSON_PATH[3:])
     tau_range = list(df.loc()[ELEMENT])
     # tau_range = [From, To, Unit]
     tau_mag = (tau_range[0] + tau_range[1])/2
@@ -98,7 +146,19 @@ def pick_tau():
 
 @cache
 def pick_mu(typ):
-    # **typ** *(string)* Which charge is the current majority. Must be either "n" or "p"
+    """
+    | Returns appropriate mu value depending on dotation element and magnitude
+    | Only has access to Si substrate values, see *scripts/initial_values.py* line 61
+    | Called from ``read_dataframe.fill_values()`` during ``modell.calculate_I_s()``
+    | 
+    | This function uses ``@functools.cache`` decorator
+
+    :param typ: Must be "n" or "p". Set's current charge majority
+    :type typ: string
+    :return: mu_n or mu_p
+    :rtype: int
+    """
+
     from math import floor, log10
     content = values["Diode"]
     if typ == "n":
@@ -106,13 +166,16 @@ def pick_mu(typ):
         mag = floor(log10(dot))
         mu = values["Beweglichkeiten von Majoritätsträgern"].loc()[mag]
         kind = content.loc()["Donator Atomsorte"].Symbol
-        return mu[kind]
     elif typ == "p":
         dot = float(fill_values(N_a * centimeter ** 3))
         mag = floor(log10(dot))
         mu = values["Beweglichkeiten von Majoritätsträgern"].loc()[mag]
         kind = content.loc()["Akzeptor Atomsorte"].Symbol
+    if kind in mu.keys():
         return mu[kind]
+    else:
+        from initial_values import JSON_PATH
+        raise NotImplementedError("No \\mu values for the current dotation available in " + JSON_PATH[3:])
 
 # ----------------------------------------------------------------------------
 

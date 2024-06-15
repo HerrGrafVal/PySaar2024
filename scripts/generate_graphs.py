@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from read_dataframe import fill_values
 from numpy import linspace, interp, array, float64
 from matplotlib.patches import FancyArrowPatch as Arrow
-from cache import read_from_file, save_to_npy, read_from_npy
+from cache import read_from_file, save_to_npy, read_from_npy, pickle_save
 # from matplotlib.ticker import EngFormatter as Form
 
 # ----------------------------------------------------------------------------
@@ -184,7 +184,7 @@ def render_W(axes, x, y):
     """
 
     # Call render() for W_V, plot W_C, remove y ticks
-    render(axes, x, y, "Bandverläufe", label="$W_V$", arrow=False, bottom=True)[0]
+    render(axes, x, y, "Bandverläufe", label="$W_V$", arrow=False, bottom=True)
     axes.plot(x, y + fill_values(W_g), "C1", label="$W_C$")
     axes.set_yticks([], [])
     # Change y axis length, plot arrow tip for y axis in bottom position
@@ -209,7 +209,8 @@ def render_W(axes, x, y):
 
 def render_current(axes, uu, ii):
     """
-    | Adjust ``generate_graphs.render()`` results to plot current over voltage
+    | Returns U_F after interpolating I(U) with linear segments
+    | Adjusts ``generate_graphs.render()`` results to plot current over voltage
 
     :param axes: Axes on which to plot
     :type axes: matplotlib.axes
@@ -217,7 +218,8 @@ def render_current(axes, uu, ii):
     :type uu: numpy.array or list
     :param ii: Data to plot
     :type ii: numpy.array or list
-    :return: *None*
+    :return: U_F
+    :rtype: float
     """
 
     # Call render() for I(U)
@@ -250,6 +252,8 @@ def render_current(axes, uu, ii):
         index = xticks.index(last_below)
         xticklabels[index] = f"$U_F$ = {last_below}V"
     axes.set_xticks(xticks, xticklabels)
+
+    return last_below
 
 # ----------------------------------------------------------------------------
 
@@ -380,7 +384,8 @@ if __name__ == "__main__":
         I_U_fig = plt.figure()
         axes = plt.gca()
 
-        render_current(axes, uu, ii)
+        U_F = render_current(axes, uu, ii)
+        pickle_save(U_F, "V_min")
 
     # ----------------------------------------------------------------------------
     # Show or save figures

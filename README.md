@@ -1,9 +1,24 @@
 # PySaar2024
 Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfachtem Drift-Diffusions-Modell (DDM).
 
+## Setup & Requirements:
+- Install all the python modules linked above, try executing:
+    `pip install pandas sympy numpy scipy mpmath pylatex matplotlib sphinx`
+- Make sure previously installed packages are up-to-date:
+    `pip install *package-name* --upgrade`
+- Generate documentation HTML:
+    1. Navigate to */PySaar2024/docs/*
+    2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
+    3. Ignore the following sphinx warning: `Inline strong start-string without end-string`
+- The HTML documentation contains additional information not present in source code docstrings
+- The HTML documentation contains a step by step on how to perform your own simulation
+- Access documentation HTML:
+    1. Navigate to */PySaar2024/docs/build/html*
+    2. Open *index.html* in browser
+
 ## ToDo:
 - [x] [Markdown](https://www.markdownguide.org/cheat-sheet/) für README nutzen
-- [ ] [reStructuredText](https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) für Docstrings nutzen
+- [x] [reStructuredText](https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) für Docstrings nutzen
 - [x] In Git Branch `dev` arbeiten
 - [x] Literaturgrundlage[^1] in Repository speichern
 - [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
@@ -30,7 +45,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] Kennlinie mit stückweiser linearer Regression approximieren
 - [x] Flussspannung aus Regressionsergebnis ermitteln
 ### Output
-- [ ] pdf Struktur erarbeiten
+- [x] pdf Struktur erarbeiten
 - [ ] `main.py` anlegen:
     1. [ ] Frage nach Parametern
     2. [ ] Aufruf aller Skripte
@@ -38,7 +53,8 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     4. [ ] pdf öffnen
 ### Dokumentation
 - [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
-- [ ] Docstrings korrigieren
+- [x] Docstrings korrigieren
+- [ ] .rst zu scripts ohne Docstrings schreiben
 - [ ] Docs erweitern:
     1. [ ] Anleitung zu parameter.json (Farbkodierung)
     2. [ ] *"Wie weitermachen?"* zu allen Skripten
@@ -51,18 +67,3 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 [^1]: Skriptum zur Vorlesung **Physikalische Grundlagen elektronischer Bauelemente** WS 2022/23, Prof. Dr.-Ing. Michael Möller
 [^2]: Verzicht auf Rechteck Näherung auch hier intensiv erprobt. Mit sympy nicht realisierbar. 
 [^3]: Ohne Rechteck Näherung der Raumladungsdichte
-
-## Setup & Requirements:
-- Install all the python modules linked above, try executing:
-    `pip install pandas sympy numpy scipy mpmath pylatex matplotlib sphinx`
-- Make sure previously installed packages are up-to-date:
-    `pip install *package-name* --upgrade`
-- Generate documentation HTML:
-    1. Navigate to */PySaar2024/docs/*
-    2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
-    3. Ignore the following sphinx warning: `Inline strong start-string without end-string`
-- The HTML documentation contains additional information not present in source code docstrings
-- The HTML documentation contains a step by step on how to perform your own simulation
-- Access documentation HTML:
-    1. Navigate to */PySaar2024/docs/build/html*
-    2. Open *index.html* in browser

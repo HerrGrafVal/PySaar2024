@@ -1,3 +1,7 @@
+############################################
+IF YOU CLONED THE REPOSITORY SKIP TO STEP 10
+############################################
+
 1. Open command prompt
 
 2. Navigate to /PySaar2024/
@@ -8,7 +12,6 @@
 
 import pathlib
 import sys
-sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix())
 sys.path.insert(0, pathlib.Path(__file__).parents[2].resolve().as_posix() + "/scripts")
 
 and to include
@@ -32,8 +35,15 @@ extensions = [
 
    generated
 
-7. Change index.rst, scripts.rst, scripts.symbols.rst
+7. Add the following to *regions.rst* right below `:methods:`
+   `:special-members: __init__`
 
-8. Execute `make.bat html`, when using windows try `.\make.bat html`
+8. Delete "docs/source/generated/modules.rst"
 
-9. Open /PySaar2024/docs/build/html/index.html
+9. Change index.rst, symbols.rst
+
+############################################
+
+10. Execute `make.bat html`, when using windows try `.\make.bat html`
+
+11. Open /PySaar2024/docs/build/html/index.html

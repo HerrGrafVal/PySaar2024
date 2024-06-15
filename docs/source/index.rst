@@ -6,10 +6,13 @@
 Welcome to PySaar2024's documentation!
 ======================================
 
+Simulation and visualisiation of a p-n-diode semiconductor.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   main
    generated/cache
    generated/DDM_ode
    generated/fermi_level

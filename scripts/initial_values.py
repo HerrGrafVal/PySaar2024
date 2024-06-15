@@ -160,7 +160,7 @@ def create_data_frame_tex(df, name, typ):
 
     name = name.replace("-", " ")
 
-    with open("../initial_values/" + name + ".tex", "w", encoding="utf8") as file:
+    with open(PARAM_FOLDER + name + ".tex", "w", encoding="utf8") as file:
         float_format = "{:." + str(FLOAT_DIGITS) + "f}"
 
         if typ == 0: # Materialparameter & Naturkonstanten

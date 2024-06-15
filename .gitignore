@@ -2,7 +2,6 @@ markdown_test.md
 __pycache__/
 doctrees/
 html/
-generated/
 simulation_results/
 initial_values/Materialparameter Si.tex
 initial_values/Materialparameter Ge.tex

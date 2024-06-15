@@ -13,6 +13,8 @@ def calculate_current(U):
 
     :param U: External voltage
     :type U: float
+    :return: Current / 1 ampere
+    :rtype: *float*
     """
 
     if U in [0, 0 * volt]:
@@ -32,6 +34,8 @@ def calculate_I_s(U):
 
     :param U: External voltage, required to calculate SCR width
     :type U: float
+    :return: Saturation current / 1 ampere
+    :rtype: *float*
     """
 
     if U in [0, 0 * volt]:
@@ -64,6 +68,8 @@ def calculate_I_rg(U):
     
     :param U: External voltage, required to calculate SCR width
     :type U: float
+    :return: I_rg / 1 ampere
+    :rtype: *float*
     """
     return 0
 

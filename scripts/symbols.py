@@ -3,17 +3,27 @@ from sympy import Symbol, Function, log, root
 # ----------------------------------------------------------------------------
 
 class Sym(Symbol):
-
     """
-    Returns `sympy.Symbol` instance with added properties.
+    | Adds 2 additional attributes to `sympy.Symbol` instances during initialisation
+    | The description is used to match the Sym instance with their value from json files
+    | The unit is later multiplied onto the numeric value when Sym is substituted
 
-    Parameters
-    : **name** *(string)* Symbol name (should be LATEX) e.g. "\\epsilon_r"
-    : **desc** *(string)* Symbol description e.g. "Relative Permittivität"
-    : ***kwargs** Passed along to `sympy.Symbol()`
+    :attributes: ``self.desc`` , ``self.unit``
     """
 
     def __init__(self, name, desc, unit, **kwargs):
+        """
+        | Returns `sympy.Symbol` instance with additional attributes.
+
+        :param name: Symbol name, passed along to ``sympy.Symbol()``
+        :type name: string
+        :param desc: Additional symbol description
+        :type desc: string
+        :param unit: Symbol's unit
+        :type unit: sympy.Symbol
+        :return: self
+        """
+
         self.desc = desc
         self.unit = unit
 
@@ -21,11 +31,8 @@ class Sym(Symbol):
         return super().__new__(cls, name, **kwargs)
 
 # ----------------------------------------------------------------------------
-
-"""
-Create `sympy.Symbol()` instances for required units of measurement
-Decision not to use `sympy.physics.units` was made for lack of good documentation on `sympy.physics.units`
-"""
+# Create `sympy.Symbol()` instances for required units of measurement
+# Decision not to use `sympy.physics.units` was made for lack of good documentation on `sympy.physics.units`
 
 meter = Symbol("m")
 centimeter = meter / 100
@@ -42,10 +49,7 @@ kelvin = Symbol("K")
 full_units = [meter, kilogram, second, ampere, volt, joule, kelvin, electron_volt]
 
 # ----------------------------------------------------------------------------
-
-"""
-Create `Sym()` instances and list of such for universal constants in this namespace
-"""
+# Create `Sym()` instances and list of such for universal constants in this namespace
 
 m_e = Sym("m_e", "Ruhemasse eines Elektrons", kilogram)
 q_e = Sym("e", "Elementarladung", ampere * second)
@@ -57,10 +61,7 @@ k = Sym("k", "Boltzmann-Konstante", joule / kelvin)
 constants = [m_e, q_e, eps_0, h, k]
 
 # ----------------------------------------------------------------------------
-
-"""
-Create `Sym()` instances and list of such for material parameters in this namespace
-"""
+# Create `Sym()` instances and list of such for material parameters in this namespace
 
 n_i = Sym("n_i", "Eigenleitungsdichte", centimeter**(-3))
 eps_r = Sym("\\epsilon_r", "Relative Permittivität", 1)
@@ -81,10 +82,7 @@ mu_n = Sym("\\mu_n", "Beweglichkeit der Elektronen als Minoritätsträger", cent
 mu_p = Sym("\\mu_p", "Beweglichkeit der Löcher als Minoritätsträger", centimeter**2 / (volt * second))
 
 # ----------------------------------------------------------------------------
-
-"""
-Create additional `Sym()` instances for use in later calculations
-"""
+# Create additional `Sym()` instances for use in later calculations
 
 x = Sym("x", "Ortskoordinate, Nullpunkt im p-n-Übergang", nanometer)
 A = Sym("A", "Querschnittsfläche der Diode", milimeter**2)
@@ -109,10 +107,7 @@ I_s = Sym("I_S", "Sättigungsstrom", ampere)
 I_rg = Sym("I_{rg}", "Rekombinationsstrom", ampere)
 
 # ----------------------------------------------------------------------------
-
-"""
-Create `Sym()` instances for charge carrier densities, needed during calculations
-"""
+# Create `Sym()` instances for charge carrier densities, needed during calculations
 
 N_a = Sym("N_A", "Akzeptor Dotierungsdichte", centimeter**(-3))
 N_am = Sym("N_A^-", "Dichte ionisierter Akzeptorniveaus", centimeter**(-3))
@@ -130,11 +125,8 @@ del_p = Function("\\Delta p")(x)
 p = Function("p")(x)
 
 # ----------------------------------------------------------------------------
-
-"""
-Create `sympy.Function()` instances for use in later calculations
-Some of the following might be redundand!
-"""
+# Create `sympy.Function()` instances for use in later calculations
+# Some of the following might be redundand!
 
 rho = Function("\\rho")(x)
 E = Function("E")(x)
@@ -149,10 +141,7 @@ J_p = Function("J_n")(x)
 R = Function("R")(x)
 
 # ----------------------------------------------------------------------------
-
-"""
-Define derived quantities for use in later calculations
-"""
+# Define derived quantities for use in later calculations
 
 eps = eps_0 * eps_r
 U_T = k * T / q_e
@@ -173,5 +162,6 @@ L_n = root(tau_n * D_n, 2)
 L_p = root(tau_p * D_p, 2)
 
 # ----------------------------------------------------------------------------
+# Save namespace to later pass it onto `cache.read_from_file()`
 
 namespace = dir()

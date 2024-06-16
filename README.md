@@ -6,13 +6,13 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     `pip install pandas sympy numpy scipy mpmath pylatex matplotlib sphinx`
 - Make sure previously installed packages are up-to-date:
     `pip install *package-name* --upgrade`
-- A working latex installation is required to use this project.
+- A working latex installation is required to use this project (pdfLaTeX **and** latexmk).
 - Generate documentation HTML:
     1. Navigate to */PySaar2024/docs/*
     2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
-    3. Ignore the following sphinx warning: `Inline strong start-string without end-string`
+    3. Ignore one occurence of the sphinx warning: `Inline strong start-string without end-string`
 - The HTML documentation contains additional information not present in source code docstrings
-- The HTML documentation contains a step by step on how to perform your own simulation
+- **The HTML documentation of *main.py* contains a step by step on how to perform your own simulation**
 - Access documentation HTML:
     1. Navigate to */PySaar2024/docs/build/html*
     2. Open *index.html* in browser
@@ -54,11 +54,11 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 ### Dokumentation
 - [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
 - [x] Docstrings korrigieren
-- [ ] .rst zu scripts ohne Docstrings schreiben
-- [ ] Docs erweitern:
-    1. [ ] Anleitung zu parameter.json (Farbkodierung)
-    2. [ ] *"Wie weitermachen?"* zu allen Skripten
-    3. [ ] Step-by-Step Anleitung zu Simulation mit einzelnen Skripten
+- [x] .rst zu scripts ohne Docstrings schreiben
+- [x] Docs erweitern:
+    1. [x] Anleitung zu parameter.json (Farbkodierung)
+    2. [x] Step-by-Step Anleitung zu Simulation in *main.py* documentation
+    3. [ ] *"Wie weitermachen?"* zu allen Skripten
 - [ ] OneDrive pptx verlinken
 ### Präsentation
 - [ ] Folien vorbereiten

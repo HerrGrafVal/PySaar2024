@@ -7,7 +7,7 @@ from symbols import material_parameters as m_keys
 
 # ----------------------------------------------------------------------------
 
-# Number of digits to display when passing `float` to `create_data_frame_pdf()`
+# Number of digits to keep when passing `float` to `create_data_frame_pdf()`
 FLOAT_DIGITS = 3
 
 # Relative path to the folder containing json with parameters. Corresponding pdf will be saved here. 

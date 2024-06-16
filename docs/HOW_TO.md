@@ -44,6 +44,6 @@ extensions = [
 
 ############################################
 
-10. Execute `make.bat html`, when using windows try `.\make.bat html`
+10. Execute `make.bat html`, when using windows try `.\make.bat html`, ignore single occurence of warning: `Inline strong start-string without end-string`
 
 11. Open /PySaar2024/docs/build/html/index.html

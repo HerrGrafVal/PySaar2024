@@ -49,179 +49,204 @@ def include_img(graph, caption):
         img.add_image(get_graph_path(graph), width = NoEscape("\\textwidth"))
         img.add_caption(NoEscape(caption))
 
-# ----------------------------------------------------------------------------
-# User validation
-inp = str(input("Have all over scripts been executed properly with current parameters? (y|n) [n]: "))
+if __name__ == "__main__":
 
-if inp != "y":
-    print("Please consult project documentation on How-To and come back here later")
-    exit()
+    # ----------------------------------------------------------------------------
+    # User validation
+    inp = str(input("Have all over scripts been executed properly with current parameters? (y|n) [n]: "))
 
-# ----------------------------------------------------------------------------
-# Setup
-# Get all simulation results ready
+    if inp != "y":
+        print("Please consult project documentation on How-To and come back here later")
+        exit()
 
-# Order of assignments must match `diode` definition in scripts/symbols.py
-N_d, N_a, W_t, A, T = diode
+    # ----------------------------------------------------------------------------
+    # Setup
+    # Get all simulation results ready
 
-diode_units = {}
-for sym in diode:
-    diode_units[sym.desc] = sym.unit
+    # Order of assignments must match `diode` definition in scripts/symbols.py
+    N_d, N_a, W_t, A, T = diode
 
-with open(JSON_PATH, "r", encoding="utf8") as file:
-    values = json.load(file)
-diode_dict = values["Diode"]
+    diode_units = {}
+    for sym in diode:
+        diode_units[sym.desc] = sym.unit
 
-tex_paths = {
-    "mu": PARAM_FOLDER[3:] + "Beweglichkeiten von Majoritätsträgern.tex",
-    "tau": PARAM_FOLDER[3:] + "Lebensdauer Zeitkonstanten der Minoritäten.tex",
-    "constants": PARAM_FOLDER[3:] + "Naturkonstanten.tex",
-    "parameters": PARAM_FOLDER[3:] + "Materialparameter " + ELEMENT + ".tex"
-    }
+    with open(JSON_PATH, "r", encoding="utf8") as file:
+        values = json.load(file)
+    diode_dict = values["Diode"]
 
-U_F = pickle_read("V_min")
+    tex_paths = {
+        "mu": PARAM_FOLDER[3:] + "Beweglichkeiten von Majoritätsträgern.tex",
+        "tau": PARAM_FOLDER[3:] + "Lebensdauer Zeitkonstanten der Minoritäten.tex",
+        "constants": PARAM_FOLDER[3:] + "Naturkonstanten.tex",
+        "parameters": PARAM_FOLDER[3:] + "Materialparameter " + ELEMENT + ".tex"
+        }
 
-diameter = round(((diode_dict[A.desc][0] * (10 ** diode_dict[A.desc][1])) / 3.14) ** 0.5, 1)
+    U_F = pickle_read("V_min")
 
-# ----------------------------------------------------------------------------
-# Create tex
+    numeric_results = pickle_read("ODE_solution")
+    x_p = round(numeric_results["x_p"] * (10 ** 9), 1)
+    x_n = round(numeric_results["x_n"] * (10 ** 9), 1)
+    W_F = round(numeric_results["W_F"], 4)
+    w_scr = x_n - x_p
+    x_p = str(x_p) + " nm"
+    x_n = str(x_n) + " nm"
+    W_F = "$W_{V} (-w_{p})$ + " + str(W_F) + " eV"
+    w_scr = str(w_scr) + " nm"
 
-# ----------------------------------------------------------------------------
-# Preamble and some lambda functions
+    diameter = round(((diode_dict[A.desc][0] * (10 ** diode_dict[A.desc][1])) / 3.14) ** 0.5, 1)
 
-doc = Document("article")
-doc.preamble.append(Command("usepackage", "booktabs"))
-doc.preamble.append(Command("usepackage", "hyperref"))
-doc.preamble.append(Command("hypersetup", "colorlinks=true, linkcolor=blue, urlcolor=blue"))
-doc.preamble.append(NoEscape("\\renewcommand*\\contentsname{Inhalt}"))
+    # ----------------------------------------------------------------------------
+    # Create tex
 
-doc.preamble.append(Command("author", "Vincent Kiefer"))
-doc.preamble.append(Command("title", "Simulationsergebnisse P-N-Übergang"))
+    # ----------------------------------------------------------------------------
+    # Preamble and some lambda functions
 
-write = lambda text: doc.append(NoEscape(text))
-nl = lambda : doc.append(NoEscape("\\\\"))
-np = lambda : doc.append(NewPage())
+    doc = Document("article")
+    doc.preamble.append(Command("usepackage", "booktabs"))
+    doc.preamble.append(Command("usepackage", "hyperref"))
+    doc.preamble.append(Command("hypersetup", "colorlinks=true, linkcolor=blue, urlcolor=blue"))
+    doc.preamble.append(NoEscape("\\renewcommand*\\contentsname{Inhalt}"))
 
-# ----------------------------------------------------------------------------
-# Title page, including table of contents
+    doc.preamble.append(Command("author", "Vincent Kiefer"))
+    doc.preamble.append(Command("title", "Simulationsergebnisse P-N-Übergang"))
 
-doc.append(Command("maketitle"))
-doc.append(Command("tableofcontents"))
-doc.append(Command("vspace","5mm"))
-doc.append(Command("noindent"))
-write("Entstanden im Rahmen des Projekts \\href{https://python-fuer-ingenieure.de/pysaar2024}{PySaar2024}")
-nl()
-write("Generiert durch Code von Vincent Kiefer, 7031439. Siehe \\href{https://github.com/HerrGrafVal/PySaar2024}{GitHub Repository}")
-np()
+    write = lambda text: doc.append(NoEscape(text))
+    nl = lambda : doc.append(NoEscape("\\\\"))
+    np = lambda : doc.append(NewPage())
 
-# ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
+    # Title page, including table of contents
 
-# Diode parameters
-with doc.create(Section("Dioden-Parameter")):
-    write("Die folgenden Parameter wurden zur Simulation verwendet:")
+    doc.append(Command("maketitle"))
+    doc.append(Command("tableofcontents"))
+    doc.append(Command("vspace","5mm"))
+    doc.append(Command("noindent"))
+    write("Entstanden im Rahmen des Projekts \\href{https://python-fuer-ingenieure.de/pysaar2024}{PySaar2024}")
     nl()
-    nl()
-    write("Halbleiter Substrat: " + ELEMENT)
-    nl()
-    write("Durchmesser der Diode: " + str(diameter) + " " + display_unit(A.unit ** 0.5))
+    write("Generiert durch Code von Vincent Kiefer, 7031439. Siehe \\href{https://github.com/HerrGrafVal/PySaar2024}{GitHub Repository}")
+    np()
 
-    # 'Newer' python versions keep the order of dict entries
-    for i in diode_dict.items():
+    # ----------------------------------------------------------------------------
+
+    # Diode parameters
+    with doc.create(Section("Dioden-Parameter")):
+        write("Die folgenden Parameter wurden zur Simulation verwendet:")
         nl()
-        # Numeric values
-        if type(i[1]) == list:
-            unit = display_unit(diode_units[i[0]])
-            if i[0] == W_t.desc:
-                text = i[0] + ": $" + str(i[1][0] * 10**i[1][1]) + " \\cdot W_g$"
-            elif i[1][1] == 0:
-                text = i[0] + ": $" + str(i[1][0] * 10**i[1][1]) + "$ " + unit
+        nl()
+        write("Halbleiter Substrat: " + ELEMENT)
+        nl()
+        write("Durchmesser der Diode: " + str(diameter) + " " + display_unit(A.unit ** 0.5))
+
+        # 'Newer' python versions keep the order of dict entries
+        for i in diode_dict.items():
+            nl()
+            # Numeric values
+            if type(i[1]) == list:
+                unit = display_unit(diode_units[i[0]])
+                if i[0] == W_t.desc:
+                    text = i[0] + ": $" + str(i[1][0] * 10**i[1][1]) + " \\cdot W_g$"
+                elif i[1][1] == 0:
+                    text = i[0] + ": $" + str(i[1][0] * 10**i[1][1]) + "$ " + unit
+                else:
+                    text = i[0] + ": $" + str(i[1][0]) + " \\cdot 10^{" + str(i[1][1]) + "}$ " + unit
+                write(text)
+            
+            # String values
             else:
-                text = i[0] + ": $" + str(i[1][0]) + " \\cdot 10^{" + str(i[1][1]) + "}$ " + unit
-            write(text)
-        
-        # String values
-        else:
-            write(i[0] + ": " + i[1])
-
-np()
-
-# pn-values
-with doc.create(Section("Verläufe von Kenngrößen")):
-    write("Die hier dargestellten Kenngrößen beinhalten die Ortsverläufe der Raumladungsdichte, \
-        Feldstärke, des elektr. Potentials und Bandkanten. Im Falle der numerischen Simulation \
-        außerdem die (logarithmierten) Ladungsträgerdichten.")
- 
-    with doc.create(Subsection("Symbolisch")):
-        write("Nach Rechtecknäherung der Raumladungsdichte ergeben sich folgende Verläufe")
-        include_img("pn", 'Kenngrößen des pn-Übergangs, symbolisch')
+                write(i[0] + ": " + i[1])
 
     np()
-    
-    with doc.create(Subsection("Numerisch")):
-        write('Durch numerisches lösen der Bestimmungsgleichungen des Drift-Diffusions-Modells (DDM) ergeben sich folgende Verläufe')
-        include_img("DDM", 'Kenngrößen des pn-Übergangs, numerisch')
-        
-        """
-        # Use individual graphs instead
-        include_img("cc", "Logarithmischer Verlauf der Ladungsträgerdichten $n(x)$ \\& $p(x)$, numerisch")
-        include_img("rho", "Verlauf der Raumladungsdichte $\\rho (x)$, numerisch")
-        include_img("E", "Verlauf der Feldstärke $E(x)$, numerisch")
-        include_img("phi", "Verlauf des Potentials $\\varphi (x)$, numerisch")
-        include_img("W", "Verlauf der Bandkanten $W_{V} (x)$, $W_{C} (x)$ und des Fermi-Niveaus $W_{F}$, numerisch")
-        """
-np()
 
-# current over voltage
-with doc.create(Section("Strom-Spannungs-Kennlinie")):
-    write("Die gegebenen Parameter erzeugen die folgende Kennlinie,")
-    nl()
-    write("mit einer Flussspannung von $U_{F}$ $=$ $" + str(U_F) + "$ $V$")
-    include_img("I(U)", "Strom-Spannungs-Kennlinie der Diode")
+    # pn-values
+    with doc.create(Section("Verläufe von Kenngrößen")):
+        write("Die hier dargestellten Kenngrößen beinhalten die Ortsverläufe der Raumladungsdichte, \
+            Feldstärke, des elektr. Potentials und Bandkanten. Im Falle der numerischen Simulation \
+            außerdem die (logarithmierten) Ladungsträgerdichten.")
+     
+        # Symbolic
+        with doc.create(Subsection("Symbolisch")):
+            write("Nach Rechtecknäherung der Raumladungsdichte ergeben sich folgende Verläufe")
+            include_img("pn", 'Kenngrößen des pn-Übergangs, symbolisch')
 
-np()
-
-# material parameter and universal constants
-with doc.create(Section("Anhang")):
-    with doc.create(Subsection("Naturkonstanten")):
-        write("Die folgenden Werte wurden für Naturkonstanten substituiert")
-        doc.append(Command("input", tex_paths["constants"]))
-        nl()
-    with doc.create(Subsection("Materialparameter")):
-        write("Die folgenden Werte wurden für Materialparameter substituiert")
-        doc.append(Command("input", tex_paths["parameters"]))
         np()
-        doc.append(Command("noindent"))
-        write("Die folgenden Werte wurden, je nach Dotierung, \
-            für die Beweglichkeit $\\mu_{p}$ bzw. $\\mu_{n}$ substituiert, für " + ELEMENT + "-Halbleiter:")
-        doc.append(Command("input", tex_paths["mu"]))
+        
+        # Numeric
+        with doc.create(Subsection("Numerisch")):
+            write('Durch numerisches lösen der Bestimmungsgleichungen des Drift-Diffusions-Modells (DDM) ergeben sich folgende Verläufe')
+            include_img("DDM", 'Kenngrößen des pn-Übergangs, numerisch')
+            
+            doc.append(Command("noindent"))
+            write("Mit folgenden (berechneten) Parametern:")
+            nl()
+            write("$x_{p}$ = " + x_p)
+            nl()
+            write("$x_{n}$ = " + x_n)
+            nl()
+            write("$w_{RLZ}$ = " + w_scr)
+            nl()
+            write("$W_{F}$ = " + W_F)
+
+            """
+            # Use individual graphs instead
+            include_img("cc", "Logarithmischer Verlauf der Ladungsträgerdichten $n(x)$ \\& $p(x)$, numerisch")
+            include_img("rho", "Verlauf der Raumladungsdichte $\\rho (x)$, numerisch")
+            include_img("E", "Verlauf der Feldstärke $E(x)$, numerisch")
+            include_img("phi", "Verlauf des Potentials $\\varphi (x)$, numerisch")
+            include_img("W", "Verlauf der Bandkanten $W_{V} (x)$, $W_{C} (x)$ und des Fermi-Niveaus $W_{F}$, numerisch")
+            """
+    np()
+
+    # current over voltage
+    with doc.create(Section("Strom-Spannungs-Kennlinie")):
+        write("Die gegebenen Parameter erzeugen die folgende Kennlinie,")
         nl()
-        write("Der Mittelwert folgender Intervalle wurde, je nach Halbleiter Substrat, \
-            als Lebensdauer $\\tau_{n}$ bzw. $\\tau_{p}$ substituiert")
-        doc.append(Command("input", tex_paths["tau"]))
+        write("mit einer Flussspannung von $U_{F}$ $=$ $" + str(U_F) + "$ $V$")
+        include_img("I(U)", "Strom-Spannungs-Kennlinie der Diode")
 
-# ----------------------------------------------------------------------------
-# Render pdf
+    np()
 
-# Attempt compiling with latexmk, in order to set up Table of Contents
-try:
-    doc.generate_pdf(PDF_PATH, compiler = "latexmk")
-except UnicodeDecodeError:
-    # latexmk handles unicode different to pdfLaTex, but the Toc is setup now
-    os.remove(PDF_PATH + ".dvi")
-# Create pdf
-doc.generate_pdf(PDF_PATH, compiler = "pdfLaTeX")
+    # material parameter and universal constants
+    with doc.create(Section("Anhang")):
+        with doc.create(Subsection("Naturkonstanten")):
+            write("Die folgenden Werte wurden für Naturkonstanten substituiert")
+            doc.append(Command("input", tex_paths["constants"]))
+            nl()
+        with doc.create(Subsection("Materialparameter")):
+            write("Die folgenden Werte wurden für Materialparameter substituiert")
+            doc.append(Command("input", tex_paths["parameters"]))
+            np()
+            doc.append(Command("noindent"))
+            write("Die folgenden Werte wurden, je nach Dotierung, \
+                für die Beweglichkeit $\\mu_{p}$ bzw. $\\mu_{n}$ substituiert, für " + ELEMENT + "-Halbleiter:")
+            doc.append(Command("input", tex_paths["mu"]))
+            nl()
+            write("Der Mittelwert folgender Intervalle wurde, je nach Halbleiter Substrat, \
+                als Lebensdauer $\\tau_{n}$ bzw. $\\tau_{p}$ substituiert")
+            doc.append(Command("input", tex_paths["tau"]))
 
-if KEEP_TEX:
-    doc.generate_tex(PDF_PATH)
+    # ----------------------------------------------------------------------------
+    # Render pdf
 
-# ----------------------------------------------------------------------------
-# Open generated pdf file in default application.
-
-if OPEN_PDF:
+    # Attempt compiling with latexmk, in order to set up Table of Contents
     try:
-        # Tested on Windows 10 only
-        cmd = '"' + PDF_PATH + '.pdf"'
-        os.system(cmd)
-    except:
-        pass
-    print(PDF_PATH + ".pdf generated successfully!")
+        doc.generate_pdf(PDF_PATH, compiler = "latexmk")
+    except UnicodeDecodeError:
+        # latexmk handles unicode different to pdfLaTex, but the Toc is setup now
+        os.remove(PDF_PATH + ".dvi")
+    # Create pdf
+    doc.generate_pdf(PDF_PATH, compiler = "pdfLaTeX")
+
+    if KEEP_TEX:
+        doc.generate_tex(PDF_PATH)
+
+    # ----------------------------------------------------------------------------
+    # Open generated pdf file in default application.
+
+    if OPEN_PDF:
+        try:
+            # Tested on Windows 10 only
+            cmd = '"' + PDF_PATH + '.pdf"'
+            os.system(cmd)
+        except:
+            pass
+        print(PDF_PATH + ".pdf generated successfully!")

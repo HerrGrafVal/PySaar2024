@@ -5,7 +5,7 @@ from matplotlib.ticker import EngFormatter
 # ----------------------------------------------------------------------------
 
 # Whether to show results in matplotlib or generate tex
-SHOW_PLOT = True
+SHOW_PLOT = False
 # Whether x-ticks should be numbers or just mark x_p, 0, x_n
 SHOW_X_NUMBERS = False
 

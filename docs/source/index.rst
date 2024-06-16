@@ -23,6 +23,7 @@ Simulation and visualisiation of a p-n-diode semiconductor.
    generated/read_dataframe
    generated/regions
    generated/symbols
+   parameters
 
 
 Indices and tables

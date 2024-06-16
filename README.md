@@ -6,6 +6,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
     `pip install pandas sympy numpy scipy mpmath pylatex matplotlib sphinx`
 - Make sure previously installed packages are up-to-date:
     `pip install *package-name* --upgrade`
+- A working latex installation is required to use this project.
 - Generate documentation HTML:
     1. Navigate to */PySaar2024/docs/*
     2. Execute `make.bat html`, on Windows do `.\make.bat html` instead
@@ -46,11 +47,10 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] Flussspannung aus Regressionsergebnis ermitteln
 ### Output
 - [x] pdf Struktur erarbeiten
-- [ ] `main.py` anlegen:
-    1. [ ] Frage nach Parametern
-    2. [ ] Aufruf aller Skripte
-    3. [ ] Gesamt pdf generieren
-    4. [ ] pdf öffnen
+- [x] `main.py` anlegen:
+    1. [x] Frage nach Parametern
+    2. [x] Gesamt pdf generieren
+    3. [x] pdf öffnen
 ### Dokumentation
 - [x] [Sphinx](https://www.sphinx-doc.org/en/master/index.html) implementieren
 - [x] Docstrings korrigieren

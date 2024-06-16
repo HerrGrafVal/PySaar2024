@@ -34,7 +34,7 @@ class Sym(Symbol):
 # Create `sympy.Symbol()` instances for required units of measurement
 # Decision not to use `sympy.physics.units` was made for lack of good documentation on `sympy.physics.units`
 
-meter = Symbol("m")
+meter = Symbol("m", positive = True)
 centimeter = meter / 100
 milimeter = meter / 1000
 nanometer = meter / (10**9)

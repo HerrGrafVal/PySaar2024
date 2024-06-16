@@ -21,6 +21,9 @@ JSON_FILE_NAME = "parameters.json"
 # File name for parameter pdf. Must end in ".pdf"
 PDF_FILE_NAME = "Initial Parameters.pdf"
 
+# Whether to attempt to open the pdf after generating it
+OPEN_PDF = False
+
 # Don't change anything here
 JSON_PATH = PARAM_FOLDER + JSON_FILE_NAME
 PDF_PATH = PARAM_FOLDER + PDF_FILE_NAME
@@ -122,14 +125,39 @@ def display_unit(unit_in):
     try:
         unit, power = text.split("**")
         unit = unit.split("/")[-1]
+        if "*" in unit:
+            factor, unit = unit.split("*")
+        else:
+            factor = "1"
+        if "/" in power:
+            power, denominator = power.split("/")
+        else: 
+            denominator = "1"
         power = int(power[0])
+
+        # Deal with density
         if "/m" in text:
             if str(1000**power) in text:
                 unit = "m" + unit
             elif str(100**power) in text:
                 unit = "c" + unit
             power *= -1
-        return "$" + unit + "^{" + str(power) + "}$"
+
+        # Deal with area/length
+        if denominator == str(1000**power):
+            unit = "m" + unit
+        elif denominator == str(100**power):
+            unit = "c" + unit
+        if factor == str(1/(1000**power)):
+            unit = "m" + unit
+        elif denominator == str(1/(100**power)):
+            unit = "c" + unit
+
+        # Add latex
+        if power == 1:
+            return "$" + unit + "$"
+        else:
+            return "$" + unit + "^{" + str(power) + "}$"
 
     # Remove unnecessary arithmetic symbols before rendering
     except:
@@ -164,20 +192,26 @@ def create_data_frame_tex(df, name, typ):
         float_format = "{:." + str(FLOAT_DIGITS) + "f}"
 
         if typ == 0: # Materialparameter & Naturkonstanten
-            file.write(df.to_latex(formatters={
+            latex = (df.to_latex(formatters={
                 "Symbol": lambda x: "$" + x.name + "$",
                 "Ordnung": lambda y: "$10^{" + str(y) + "}$" if y != 0 else 1,
                 "Einheit": lambda z: display_unit(z)
             }, float_format=float_format.format
             ))
+            caption = name
         elif typ == 2: # Lebensdauer-Zeitkonstanten der Minoritäten
-            file.write(df.to_latex(formatters={
+            latex = (df.to_latex(formatters={
                     "Von": lambda x: "$10^{" + str(x) + "}$",
                     "Bis": lambda y: "$10^{" + str(y) + "}$",
                 }))
+            caption = name
         elif typ == 3: # Beweglichkeit von Majoritätsträgern
             df.rename(index = {(x):("$10^{" + str(x) + "}$") for x in list(df.index)}, inplace = True)
-            file.write(df.to_latex())
+            latex = (df.to_latex())
+            caption = name + ", $\\mu$ in $\\frac{cm^{2}}{Vs}$"
+        # ToDo: Change latex str here to add table caption
+        latex = "\\begin{table}[h]\\centering\n" + latex + "\\caption{" + caption + "}\n\\end{table}\n"
+        file.write(latex)
 
 
 def create_pdf(name_list):
@@ -189,16 +223,15 @@ def create_pdf(name_list):
     :type name_list: list[string]
     """
 
-    from pylatex import Document, Command, Section, NoEscape
+    from pylatex import Document, Command, Section, NoEscape, NewPage
     doc = Document("basic")
     doc.preamble.append(Command("usepackage", "booktabs"))
     doc.append(Command("noindent"))
     for name in name_list:
         name = name.replace("-", " ")
+        doc.append(NewPage())
         with doc.create(Section(name)):
             doc.append(Command("input", name + ".tex"))
-            if name == "Beweglichkeiten von Majoritätsträgern":
-                doc.append(NoEscape("$[\\mu]$ $=$ $\\frac{cm^{2}}{Vs}$"))
     doc.generate_pdf(PDF_PATH,
                      compiler="pdfLaTeX")
 
@@ -244,15 +277,16 @@ if __name__ == "__main__":
             typ = 3
         if key != "Diode": 
             name_list.append(key)
-        create_data_frame_tex(values[key], key, typ)
+            create_data_frame_tex(values[key], key, typ)
     create_pdf(name_list)
 
-    try:
-        # Open generated pdf file in default application.
-        # Tested on Windows 10 only
-        import os
-        cmd = '"' + PDF_PATH + '.pdf"'
-        os.system(cmd)
-    except:
-        pass
-    print(PDF_FILE_NAME, "generated at", PARAM_FOLDER)
+    if OPEN_PDF:
+        try:
+            # Open generated pdf file in default application.
+            # Tested on Windows 10 only
+            import os
+            cmd = '"' + PDF_PATH + '.pdf"'
+            os.system(cmd)
+        except:
+            pass
+        print(PDF_FILE_NAME, "generated at", PARAM_FOLDER)

@@ -21,7 +21,7 @@ Simulation und Visualisierung eines p-n-Übergang in einer Diode nach vereinfach
 - [x] [Markdown](https://www.markdownguide.org/cheat-sheet/) für README nutzen
 - [x] [reStructuredText](https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst) für Docstrings nutzen
 - [x] In Git Branch `dev` arbeiten
-- [x] Literaturgrundlage[^1] in Repository speichern
+- [x] Literaturgrundlage[^1] aus Repository History entfernen
 - [x] DDM Konstanten mit [Pandas](https://pandas.pydata.org/docs/) darstellen
 - [x] DDM Bestimmungsgleichungen[^2] mit [SymPy](https://docs.sympy.org/latest/index.html) implementieren
 - [x] DDM[^3] Numerisch lösen. [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [mpmath](https://mpmath.org/) verwenden

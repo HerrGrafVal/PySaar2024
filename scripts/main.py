@@ -162,6 +162,8 @@ if __name__ == "__main__":
         write("Die hier dargestellten Kenngrößen beinhalten die Ortsverläufe der Raumladungsdichte, \
             Feldstärke, des elektr. Potentials und Bandkanten. Im Falle der numerischen Simulation \
             außerdem die (logarithmierten) Ladungsträgerdichten.")
+        nl()
+        write("Die hier dargestellten Verläufe (symbolisch und numerisch) gelten nur im thermodynamischen Gleichgewicht, also ohne externer Spannung!")
      
         # Symbolic
         with doc.create(Subsection("Symbolisch")):

@@ -26,6 +26,9 @@ SHOW_PLOT = False
 # Starting at THRESHOLD * ampere diode is treated as ideal conductor
 THRESHOLD = 10000
 
+# Whether to render labels with latex, disable to speed up script significantly
+LATEX_RENDER = True
+
 # ----------------------------------------------------------------------------
 
 def render(axes, x, y, title, **kwargs):
@@ -146,7 +149,10 @@ def render_E(axes, x, y):
     axes.set_ylabel("$E(x)$", rotation=0)
     render(axes, x, y, "Feldstärke")
     axes.set_ylim(top=max(abs(y)) / 2)
-    axes.set_yticks([-max(abs(y))], ["$\\dfrac{e}{ \\epsilon } N_A x_p$"])
+    if LATEX_RENDER:
+        axes.set_yticks([-max(abs(y))], ["$\\frac{e}{ \\epsilon } N_A x_p$"])
+    else:
+        axes.set_yticks([-max(abs(y))], ["$\\dfrac{e}{ \\epsilon } N_A x_p$"])
 
 
 def render_phi(axes, x, y):
@@ -258,6 +264,9 @@ def render_current(axes, uu, ii):
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
+
+    if LATEX_RENDER:
+        plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.serif": "Computer Modern"})
 
     # ----------------------------------------------------------------------------
     # Generate pn-graphs if desired
@@ -407,5 +416,5 @@ if __name__ == "__main__":
         if PLOT_CURRENT:
             # Save current-figure
             plt.figure(I_U_fig)
-            plt.savefig(SAVE_FOLDER + "I(U)_graph.png", bbox_inches = "tight")
+            plt.savefig(SAVE_FOLDER + "I(U)_graph.png")
             plt.close(I_U_fig)

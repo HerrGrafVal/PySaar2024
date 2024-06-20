@@ -3,7 +3,7 @@ scripts.generate\_graphs
 
 *generate_graphs.py* requires sympy expressions for pn-functions saved in *SAVE_FOLDER*. These can be provided by executing *modell.py* Plots results of symbolic diode approximation.
 
-Notable variables (see source code) include ``USE_CACHED_PN_VALUES``, ``USE_CACHED_CURRENT_VALUES``, ``HIDE_CACHE_LOG``, ``PLOT_PN``, ``PLOT_CURRENT``, ``SHOW_PLOT`` and ``THRESHOLD``.
+Notable variables (see source code) include ``USE_CACHED_PN_VALUES``, ``USE_CACHED_CURRENT_VALUES``, ``HIDE_CACHE_LOG``, ``PLOT_PN``, ``PLOT_CURRENT``, ``SHOW_PLOT``, ``THRESHOLD`` and ``LATEX_RENDER``.
 
 | Execution behaviour depends on above mentioned variables. See source code.
 | Does nothing upon import.

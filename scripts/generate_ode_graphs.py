@@ -6,13 +6,20 @@ from matplotlib.ticker import EngFormatter
 
 # Whether to show results in matplotlib or generate tex
 SHOW_PLOT = False
+
 # Whether x-ticks should be numbers or just mark x_p, 0, x_n
 SHOW_X_NUMBERS = False
+
+# Whether to render labels with latex, disable to speed up script significantly
+LATEX_RENDER = True
 
 # ----------------------------------------------------------------------------
 # Retrieve simulation results
 
 if __name__ == "__main__":
+
+    if LATEX_RENDER:
+        plt.rcParams.update({"text.usetex": True, "font.family": "serif", "font.serif": "Computer Modern"})
 
     try:
         results = pickle_read("ODE_solution")

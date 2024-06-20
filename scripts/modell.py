@@ -11,6 +11,7 @@ def calculate_current(U):
     | Returns current (divided by 1 ampere) based on U
     | Currently ignores I_rg, see ``modell.calculate_I_rg()`` documentation!
     | **Executing this function takes a few seconds, don't worry.**
+    
     :param U: External voltage
     :type U: float
     :return: Current / 1 ampere
